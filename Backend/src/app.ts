@@ -9,4 +9,4 @@ app.get('/', (req, res) => {
   res.send('Hello from app!');
 });
 
-export default app;  // <--- This line is **required** for `import app from './app';` to work
+export default app;  
