@@ -1,0 +1,25 @@
+import { Request, Response } from 'express';
+import { signupUser } from '../services/auth.service';
+
+export const signupController = async (req: Request, res: Response) => {
+  try {
+    const newUser = await signupUser(req.body);
+    res.status(201).json({
+      message: 'User created successfully',
+      user: {
+        id: newUser.id,
+        display_name: newUser.display_name,
+        username: newUser.username,
+        email: newUser.email,
+        phone_number: newUser.phone_number,
+        is_verified: newUser.is_verified,
+      },
+    });
+  } catch (error) {
+   if (error instanceof Error) {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Unexpected error occurred' });
+    }
+  }
+};

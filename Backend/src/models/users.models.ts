@@ -4,7 +4,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import  sequelize from '../config/database'; 
 import { IUserAttributes } from '../types/user.types';
 
-type UserCreationAttributes = Optional<IUserAttributes, 'id' | 'email' | 'phone_number' | 'status_desc' | 'profile_picture' | 'is_verified'>;
+type UserCreationAttributes = Optional<IUserAttributes, 'id' | 'email' | 'phone_number' | 'status_description' | 'profile_picture' | 'is_verified'>;
 
 export class User extends Model<IUserAttributes, UserCreationAttributes> implements IUserAttributes {
   public id!: number;
@@ -13,7 +13,7 @@ export class User extends Model<IUserAttributes, UserCreationAttributes> impleme
   public display_name!: string;
   public username!: string;
   public password!: string;
-  public status_desc?: string;
+  public status_description?: string;
   public profile_picture?: string;
   public is_verified?: boolean;
 
@@ -51,7 +51,7 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    status_desc: {
+    status_description: {
       type: DataTypes.STRING,
     },
     profile_picture: {
@@ -64,7 +64,7 @@ User.init(
   },
   {
     sequelize,
-    tableName: 'users',
+     tableName: '"Users"',
     modelName: 'User',
   }
 );

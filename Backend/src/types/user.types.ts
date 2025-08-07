@@ -5,7 +5,7 @@ export interface IUserAttributes {
   display_name: string;
   username: string;
   password: string;
-  status_desc?: string;
+  status_description?: string;
   profile_picture?: string;
   is_verified?: boolean;
   createdAt?: Date;
