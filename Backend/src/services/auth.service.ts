@@ -1,7 +1,10 @@
 import { User } from '../models/users.models';
-import { signupSchema } from '../validations/user.validation';
-import { getInputType, hashPassword } from '../utils/helper.util';
+import { signupSchema,loginSchema } from '../validations/user.validation';
+import { getInputType, hashPassword ,comparePassword} from '../utils/helper.util';
 import { IUserAttributes } from '../types/user.types';
+import { generateToken } from '../utils/helper.util';
+import { ILoginInput } from '../types/user.types';
+
 
 export const signupUser = async (input: Partial<IUserAttributes>) => {
   const { error, value } = signupSchema.validate(input);
@@ -31,4 +34,34 @@ export const signupUser = async (input: Partial<IUserAttributes>) => {
   });
 
   return newUser;
+};
+export const loginUser = async (input: ILoginInput) => {
+  const { error, value } = loginSchema.validate(input);
+  if (error) throw new Error(`Validation error: ${error.details[0].message}`);
+
+  const { identifier, password } = value;
+
+  let user;
+  const inputType = getInputType(identifier);
+
+
+  user = await User.findOne({ where: { [inputType]: identifier } });
+
+
+  if (!user) {
+    user = await User.findOne({ where: { username: identifier } });
+  }
+
+  if (!user) {
+    throw new Error('User not found.');
+  }
+
+  const isPasswordValid = await comparePassword(password, user.password);
+  if (!isPasswordValid) {
+    throw new Error('Invalid password.');
+  }
+
+  const token = generateToken({ id: user.id });
+
+  return { user, token };
 };

@@ -1,14 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { JwtEnvConfig } from '../types/env.types';
-import { getEnvVar } from '../utils/helper.util';
+import { JWT_CONFIG } from '../utils/helper.util';
 import {JwtPayload} from "../types/jwt-payload.types"
-const JWT_CONFIG: JwtEnvConfig = {
-  JWT_SECRET: getEnvVar('JWT_SECRET'),
-  JWT_EXPIRES_IN: getEnvVar('JWT_EXPIRES_IN'),
-  BCRYPT_SALT: getEnvVar('BCRYPT_SALT'),
-};
-
 interface AuthenticatedRequest extends Request {
   userId?: string;
 }

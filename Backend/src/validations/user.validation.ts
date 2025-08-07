@@ -11,9 +11,6 @@ export const signupSchema = Joi.object({
 }).or('email', 'phone_number')
 
 export const loginSchema = Joi.object({
-  email: Joi.string().email().optional(),
-  phone_number: Joi.string()
-    .pattern(/^\+?[0-9]{10,15}$/)
-    .optional(),
+  identifier: Joi.string().required().label('Email, Phone Number, or Username'),
   password: Joi.string().required(),
-}).or('email', 'phone_number');
+});

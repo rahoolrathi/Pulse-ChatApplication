@@ -11,3 +11,8 @@ export interface IUserAttributes {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface ILoginInput {
+  identifier: string;
+  password: string;
+}
