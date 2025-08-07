@@ -1,7 +1,4 @@
-
 import { Sequelize, Dialect } from "sequelize";
-
-
 const sequelize = new Sequelize(
   process.env.DB_NAME as string,
   process.env.DB_USER as string,
