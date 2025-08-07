@@ -16,3 +16,10 @@ export interface ILoginInput {
   identifier: string;
   password: string;
 }
+
+export interface IEditUserAttributes {
+  email?: string;
+  phone_number?: string;
+  status_description?: string;
+  profile_picture?: string;
+}

@@ -3,7 +3,7 @@ import { JwtEnvConfig } from '../types/env.types';
 import jwt from 'jsonwebtoken';
 import { Dialect } from 'sequelize';
 import { DatabaseConfig } from '../types/env.types';
-
+import { Request } from 'express';
 export const getEnvVar = (key: string): string => {
   const value = process.env[key];
   if (!value) {
@@ -24,7 +24,10 @@ export const DB_CONFIG: DatabaseConfig = {
   DB_HOST: getEnvVar('DB_HOST'),
   DB_DIALECT: getEnvVar('DB_DIALECT') as Dialect,
 };
-
+export interface AuthenticatedRequest extends Request {
+  userId?: number;
+}
+ 
 export const hashPassword = async (password: string): Promise<string> => {
   const salt = await bcrypt.genSalt(10);
   return bcrypt.hash(password, salt);

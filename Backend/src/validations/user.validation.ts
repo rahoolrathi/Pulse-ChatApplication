@@ -14,3 +14,10 @@ export const loginSchema = Joi.object({
   identifier: Joi.string().required().label('Email, Phone Number, or Username'),
   password: Joi.string().required(),
 });
+
+export const EditProfileSchema = Joi.object({
+  email: Joi.string().email().optional(),
+  phone_number: Joi.string().pattern(/^[0-9]+$/).min(10).max(15).optional(),
+  status_description: Joi.string().max(255).optional(),
+  profile_picture: Joi.string().optional(),
+});
