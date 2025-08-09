@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { JwtEnvConfig } from '../types/env.types';
 import jwt from 'jsonwebtoken';
+import { Socket } from 'socket.io';
 import { Dialect } from 'sequelize';
 import { DatabaseConfig } from '../types/env.types';
 import { Request } from 'express';
@@ -25,7 +26,11 @@ export const DB_CONFIG: DatabaseConfig = {
   DB_DIALECT: getEnvVar('DB_DIALECT') as Dialect,
 };
 export interface AuthenticatedRequest extends Request {
-  userId?: number;
+  userId?: string;
+}
+
+export interface AuthenticatedSocket extends Socket {
+  userId?: string;
 }
  
 export const hashPassword = async (password: string): Promise<string> => {
@@ -50,8 +55,22 @@ export const generateToken = (payload: object): string => {
   return jwt.sign(payload, JWT_CONFIG.JWT_SECRET, { expiresIn: '7d' });}
 
 
+export enum GroupMemberRole {
+  ADMIN = 'admin',
+  MEMBER = 'member',
+}
+
+export enum MessageType {
+  TEXT = 'text',
+  IMAGE = 'image',
+  VIDEO = 'video',
+  FILE = 'file',
+}
 
 
+export enum RoomType{
+  GROUP,PRIVATE
+}
 
 
 

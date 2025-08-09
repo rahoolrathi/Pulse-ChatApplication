@@ -1,7 +1,7 @@
 // user.routes.ts
 import { Router } from 'express';
 import * as UserController from '../controllers/user.contoller';
-import { authMiddleware } from '../middleware/auth.middleware';
+import { authMiddleware } from '../middleware/http.middleware';
 import { upload } from '../utils/multer';
 const router = Router();
 

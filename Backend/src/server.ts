@@ -1,19 +1,41 @@
 import dotenv from 'dotenv';
 dotenv.config();
+
+import http from 'http';
 import app from './app';
-import sequelize from './config/database'
-const PORT = process.env.PORT || 4000;
+import sequelize from './config/database';
+import { redisClient } from './utils/redis.util';
+import { SocketManager } from './sockets/socket';
+import { Server } from 'socket.io';
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || "http://localhost:4000",
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
+});
+
+new SocketManager(io);
 
 (async () => {
   try {
     await sequelize.authenticate();
-    console.log("✅ Database connected!");
+    console.log('✅ Database connected!');
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+    await redisClient.connect();
+    console.log('✅ Redis connected successfully');
+
+    const PORT = parseInt(process.env.PORT || '4000');
+    server.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`📡 Socket.IO server ready`);
     });
   } catch (error) {
-    console.error("❌ Database connection error:", error);
-    process.exit(1); 
+    console.error('❌ Startup error:', error);
+    process.exit(1);
   }
 })();

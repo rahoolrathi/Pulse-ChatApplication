@@ -7,7 +7,7 @@ import { IUserAttributes } from '../types/user.types';
 type UserCreationAttributes = Optional<IUserAttributes, 'id' | 'email' | 'phone_number' | 'status_description' | 'profile_picture' | 'is_verified'>;
 
 export class User extends Model<IUserAttributes, UserCreationAttributes> implements IUserAttributes {
-  public id!: number;
+  public id!: string;
   public email?: string;
   public phone_number?: string;
   public display_name!: string;
@@ -24,9 +24,9 @@ export class User extends Model<IUserAttributes, UserCreationAttributes> impleme
 User.init(
   {
     id: {
-      type: DataTypes.INTEGER.UNSIGNED,
-      autoIncrement: true,
-      primaryKey: true,
+     type: DataTypes.STRING,
+      defaultValue: DataTypes.UUIDV4, 
+      primaryKey: true
     },
     email: {
       type: DataTypes.STRING,

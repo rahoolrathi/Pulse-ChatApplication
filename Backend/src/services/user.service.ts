@@ -7,7 +7,7 @@ import { EditProfileSchema } from '../validations/user.validation';
 import { IEditUserAttributes } from '../types/user.types';
 import { Op } from 'sequelize';
 
-export const getProfile = async (userId: number) => {
+export const getProfile = async (userId: string) => {
   const user = await User.findByPk(userId);
   if (!user) throw new Error('User not found');
   return user;
@@ -15,7 +15,7 @@ export const getProfile = async (userId: number) => {
 
 
 
-export const editUserProfile = async (userId: number, input: IEditUserAttributes) => {
+export const editUserProfile = async (userId: string, input: IEditUserAttributes) => {
  
   const user = await User.findByPk(userId);
   if (!user) {

@@ -1,5 +1,5 @@
 export interface IUserAttributes {
-  id?: number;
+  id?: string;
   email?: string;
   phone_number?: string;
   display_name: string;
