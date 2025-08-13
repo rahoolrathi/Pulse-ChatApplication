@@ -1,0 +1,315 @@
+.textEditorContainer {
+  position: relative;
+  width: 100%;
+  // max-width: 1032px;
+  // margin: 0 auto;
+  box-sizing: border-box;
+  padding: 24px 32px 80px 32px;
+
+  .textEditor {
+    background: #f2f9ff;
+    border: 2px solid #b7ddf2;
+    border-radius: 8px;
+    position: relative;
+    min-height: 120px;
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 8px;
+      border-bottom: 1px solid rgba(89, 99, 104, 0.1);
+
+      .toolbarButton {
+        // width: 24px;
+        // height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #596368;
+        background: none;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(89, 99, 104, 0.1);
+        }
+
+        &.active {
+          background: #b7ddf2;
+          color: #245e80;
+        }
+
+        svg {
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      .separator {
+        width: 1px;
+        height: 24px;
+        background: rgba(89, 99, 104, 0.3);
+        margin: 0 4px;
+      }
+    }
+
+    .messageInput {
+      padding: 16px;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+
+      .placeholder {
+        font-family: 'Roboto', sans-serif;
+        font-style: normal;
+        font-weight: 400;
+        font-size: 19px;
+        line-height: 19px;
+        color: #596368;
+        cursor: text;
+      }
+
+      .inputField {
+        width: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-family: 'Roboto', sans-serif;
+        font-style: normal;
+        font-weight: 400;
+        font-size: 19px;
+        line-height: 19px;
+        color: #596368;
+        resize: none;
+        flex-grow: 1;
+        // min-height: 19px;
+
+        &:focus {
+          color: #000000;
+        }
+      }
+    }
+
+    .imageIndicator {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      margin: 0 16px;
+      background: rgba(183, 221, 242, 0.3);
+      border-radius: 4px;
+      border: 1px dashed #b7ddf2;
+
+      .imageInfo {
+        color: #596368;
+        font-size: 14px;
+        cursor: pointer;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: #245e80;
+        }
+      }
+
+      .clearImageButton {
+        width: 20px;
+        height: 20px;
+        background: none;
+        color: #596368;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(89, 99, 104, 0.1);
+          color: #245e80;
+        }
+      }
+    }
+
+    .bottomToolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-top: 1px solid rgba(89, 99, 104, 0.1);
+
+      .leftTools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .expandButton {
+          width: 24px;
+          height: 24px;
+          background: #b7ddf2;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #596368;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: #9ec5db;
+          }
+
+          svg {
+            width: 12px;
+            height: 12px;
+          }
+        }
+
+        .textFormat {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          .formatText {
+            font-family: 'Roboto';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 18px;
+            line-height: 21px;
+            color: #596368;
+          }
+
+          .underline {
+            width: 22px;
+            height: 1px;
+            background: #596368;
+          }
+        }
+
+        .toolButton {
+          // width: 24px;
+          // height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #596368;
+          background: none;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: rgba(89, 99, 104, 0.1);
+          }
+
+          svg {
+            width: 20px;
+            height: 20px;
+          }
+        }
+
+        .attachButton {
+          width: 22px;
+          height: 22px;
+          border: 1.5px solid #596368;
+          border-radius: 3px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          position: relative;
+
+          &::after {
+            content: '';
+            position: absolute;
+            width: 20.74px;
+            height: 1px;
+            background: #596368;
+            transform: rotate(135deg);
+          }
+        }
+      }
+
+      .sendButton {
+        // width: 24px;
+        // height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #596368;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transform: rotate(0);
+        transition: all 0.2s ease;
+
+        &:hover {
+          color: #245e80;
+        }
+
+        svg {
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+  }
+
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+
+    .modalContent {
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+
+      .modalClose {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.2s ease;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.8);
+        }
+      }
+
+      .modalImage {
+        width: 100%;
+        height: auto;
+        max-width: 80vw;
+        max-height: 80vh;
+        object-fit: contain;
+        border-radius: 4px;
+      }
+    }
+  }
+}

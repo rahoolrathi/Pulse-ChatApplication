@@ -1,0 +1,145 @@
+.illustrationContainer {
+  position: relative;
+  width: 600px;
+  height: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .svgWrapper {
+    position: absolute;
+    cursor: pointer;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .defaultSvg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+
+    &.hidden {
+      opacity: 0;
+    }
+  }
+
+  .hoverSvg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+
+    &.visible {
+      opacity: 1;
+    }
+  }
+
+  .menWrapper {
+    top: 106px;
+    left: 0%;
+    width: 120px;
+    height: 160px;
+    z-index: 3;
+  }
+
+  .womenWrapper {
+    top: 7%;
+    right: 11%;
+    width: 120px;
+    height: 120px;
+    z-index: 3;
+  }
+
+  .planetWrapper {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 280px;
+    height: 280px;
+    z-index: 1;
+  }
+
+  .locationMarks {
+    position: absolute;
+    width: 410px;
+    height: 230px;
+    z-index: 4;
+
+    .marks {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    width: 500px;
+    height: 400px;
+
+    .menWrapper {
+      width: 100px;
+      height: 130px;
+    }
+
+    .womenWrapper {
+      width: 90px;
+      height: 120px;
+    }
+
+    .planetWrapper {
+      width: 230px;
+      height: 230px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    width: 350px;
+    height: 300px;
+
+    .menWrapper {
+      width: 80px;
+      height: 100px;
+      top: 5%;
+      left: 8%;
+    }
+
+    .womenWrapper {
+      width: 70px;
+      height: 90px;
+      top: 8%;
+      right: 10%;
+    }
+
+    .planetWrapper {
+      width: 180px;
+      height: 180px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    width: 280px;
+    height: 240px;
+
+    .menWrapper {
+      width: 60px;
+      height: 80px;
+    }
+
+    .womenWrapper {
+      width: 55px;
+      height: 70px;
+    }
+
+    .planetWrapper {
+      width: 150px;
+      height: 150px;
+    }
+  }
+}

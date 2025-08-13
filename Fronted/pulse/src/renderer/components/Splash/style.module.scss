@@ -1,0 +1,15 @@
+.chatArea {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #E6EEF2;
+}
+
+.topArea {
+  flex: 3;
+}
+
+.bottomArea {
+  flex: 1;
+}

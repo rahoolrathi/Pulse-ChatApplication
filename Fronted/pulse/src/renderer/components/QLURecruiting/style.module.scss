@@ -1,0 +1,224 @@
+.QLURecruiting {
+  height: 960px;
+  width: 280px;
+  background: #FFFFFF;
+  border-radius: 16px 0px 0px 0px;
+  flex-direction: column;
+  display: flex;
+
+  .header {
+    position: relative;
+    width: 280px;
+    height: 59px;
+    border-top-left-radius: 16px;
+    padding-top: 8px;
+    padding-right: 16px;
+    padding-bottom: 8px;
+    padding-left: 16px;
+    gap: 32px;
+    align-items: center;
+    border-bottom: 1px solid #005F93;
+    box-sizing: border-box;
+
+    .title {
+      width: 135px;
+      height: 23px;
+      font-size: 20px;
+      font-weight: 600;
+      color: #06334d;
+      margin: 0;
+    }
+  }
+
+  .buttonsWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    margin-left: 16px;
+    margin-top: 8px;
+
+    .sectionButton {
+      width: 248px; // Changed from 320px to fit container
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      background-color: #f2f9ff;
+      border: 0;
+      border-radius: 8px; // Added border radius
+      cursor: pointer;
+      transition: background 0.2s ease;
+      box-sizing: border-box;
+
+      &:hover {
+        background-color: #c7eaff;
+      }
+
+      .iconWrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+      }
+
+      .buttonLabel {
+        font-size: 16px;
+        color: #245e80;
+        font-weight: 700;
+      }
+    }
+  }
+
+  .navigation {
+    flex: 1;
+    padding: 16px 0;
+    overflow-y: auto;
+
+    .navItem {
+      display: flex;
+      align-items: center;
+      width: 248px; // Changed from 288px to fit container
+      height: 40px;
+      padding: 8px 16px;
+      margin-left: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      gap: 8px;
+      border-radius: 8px;
+      box-sizing: border-box;
+
+      &:hover {
+        background-color: #c7eaff;
+      }
+
+      &.active {
+        background-color: #c7eaff;
+        border-right: 3px solid #245e80;
+      }
+
+      .icon {
+        font-size: 16px;
+        width: 20px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #245e80;
+        flex: 1;
+      }
+
+      .chevron {
+        width: 12px;
+        height: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+      }
+
+      .labelRow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+      }
+    }
+
+    .groupsList,
+    .usersList {
+      padding-left: 16px;
+      max-height: 250px;
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 3px;
+      }
+
+      .groupItem,
+      .userItem {
+        display: flex;
+        align-items: center;
+        width: 232px; // Changed from 272px to fit container
+        height: 40px;
+        padding: 12px 16px 12px 16px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        gap: 8px;
+        border-radius: 4px;
+        margin: 2px 0px;
+        box-sizing: border-box;
+
+        &:hover {
+          background-color: #f0f7ff;
+        }
+
+        &.selected {
+          padding-left: 32px;
+          background-color: #c7eaff;
+        }
+      }
+    }
+
+    .groupItem {
+      .groupIcon {
+        color: #245e80;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        justify-content: center;
+        font-weight: 600;
+      }
+
+      .groupName {
+        font-size: 14px;
+        color: #245e80;
+        font-weight: 400;
+        font-family: 'Roboto', sans-serif;
+      }
+    }
+
+    .userItem {
+      padding: 12px 16px 8px;
+
+      .userAvatarContainer {
+        position: relative;
+        display: inline-block;
+
+        .userAvatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: url('/api/placeholder/24/24') center/cover;
+          flex-shrink: 0;
+        }
+
+        .onlineIndicator {
+          position: absolute;
+          bottom: 5%;
+          right: 3%;
+          width: 6px;
+          height: 6px;
+          background-color: #3ee544;
+          border-radius: 50%;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+      }
+
+      .userName {
+        font-size: 14px;
+        color: #245e80;
+        font-family: 'Roboto', sans-serif;
+      }
+    }
+  }
+}
