@@ -27,10 +27,12 @@ export const signupController = async (req: Request, res: Response) => {
 
 export const loginController = async (req: Request, res: Response) => {
   try {
+   
     const { identifier, password } = req.body;
+     
 
     const result = await loginUser({ identifier, password });
-
+console.log(identifier)
     res.status(200).json({
       message: 'Login successful',
       data: {

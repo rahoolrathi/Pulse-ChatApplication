@@ -37,17 +37,18 @@ export const signupUser = async (input: Partial<IUserAttributes>) => {
   return newUser;
 };
 export const loginUser = async (input: ILoginInput) => {
+  
   const { error, value } = loginSchema.validate(input);
+  
   if (error) throw new Error(`Validation error: ${error.details[0].message}`);
 
   const { identifier, password } = value;
-
+  console.log(identifier, password)
   let user;
   const inputType = getInputType(identifier);
-
-
+ 
   user = await User.findOne({ where: { [inputType]: identifier } });
-
+  
 
   if (!user) {
     user = await User.findOne({ where: { username: identifier } });

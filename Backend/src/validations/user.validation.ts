@@ -16,6 +16,8 @@ export const loginSchema = Joi.object({
 });
 
 export const EditProfileSchema = Joi.object({
+  display_name:Joi.string().optional(),
+  username:Joi.string().optional(),
   email: Joi.string().email().optional(),
   phone_number: Joi.string().pattern(/^[0-9]+$/).min(10).max(15).optional(),
   status_description: Joi.string().max(255).optional(),

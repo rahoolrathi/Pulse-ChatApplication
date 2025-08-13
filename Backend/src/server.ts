@@ -12,8 +12,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:4000",
-    methods: ["GET", "POST"],
+    origin: "*",
     credentials: true
   },
   transports: ['websocket', 'polling']

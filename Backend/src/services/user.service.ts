@@ -53,6 +53,18 @@ export const editUserProfile = async (userId: string, input: IEditUserAttributes
     }
   }
 
+   if (value.username) {
+    const existingUsername = await User.findOne({
+      where: {
+        username: value.username,
+        id: { [Op.ne]: userId },
+      },
+    });
+    if (existingUsername) {
+      throw new Error('Username already exists');
+    }
+  }
+
  
   await user.update(value);
 
