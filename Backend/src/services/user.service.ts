@@ -2,31 +2,31 @@
 //get all profiles
 //edit profile
 //logout
-import { User } from '../models/users.models'
-import { EditProfileSchema } from '../validations/user.validation';
-import { IEditUserAttributes } from '../types/user.types';
-import { Op } from 'sequelize';
+import { User } from "../models/users.models";
+import { EditProfileSchema } from "../validations/user.validation";
+import { IEditUserAttributes } from "../types/user.types";
+import { Op } from "sequelize";
 
 export const getProfile = async (userId: string) => {
   const user = await User.findByPk(userId);
-  if (!user) throw new Error('User not found');
+  if (!user) throw new Error("User not found");
   return user;
 };
 
-
-
-export const editUserProfile = async (userId: string, input: IEditUserAttributes) => {
- 
+export const editUserProfile = async (
+  userId: string,
+  input: IEditUserAttributes
+) => {
   const user = await User.findByPk(userId);
   if (!user) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   const { error, value } = EditProfileSchema.validate(input);
   if (error) {
     throw new Error(error.details[0].message);
   }
-   console.log(value)
+  console.log(value);
 
   if (value.email) {
     const existingEmail = await User.findOne({
@@ -36,10 +36,9 @@ export const editUserProfile = async (userId: string, input: IEditUserAttributes
       },
     });
     if (existingEmail) {
-      throw new Error('Email already exists');
+      throw new Error("Email already exists");
     }
   }
-
 
   if (value.phone_number) {
     const existingPhone = await User.findOne({
@@ -49,11 +48,11 @@ export const editUserProfile = async (userId: string, input: IEditUserAttributes
       },
     });
     if (existingPhone) {
-      throw new Error('Phone number already exists');
+      throw new Error("Phone number already exists");
     }
   }
 
-   if (value.username) {
+  if (value.username) {
     const existingUsername = await User.findOne({
       where: {
         username: value.username,
@@ -61,14 +60,25 @@ export const editUserProfile = async (userId: string, input: IEditUserAttributes
       },
     });
     if (existingUsername) {
-      throw new Error('Username already exists');
+      throw new Error("Username already exists");
     }
   }
 
- 
   await user.update(value);
-
 
   return user;
 };
 
+export const searchUser = async (key: string) => {
+  if (!key) throw new Error("Search key is required");
+
+  return await User.findAll({
+    where: {
+      [Op.or]: [
+        { username: { [Op.iLike]: `%${key}%` } },
+        { display_name: { [Op.iLike]: `%${key}%` } },
+      ],
+    },
+    attributes: ["id", "username", "display_name", "profile_picture"],
+  });
+};

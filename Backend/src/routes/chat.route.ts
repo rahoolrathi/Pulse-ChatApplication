@@ -1,28 +1,34 @@
-import ChatController from "../controllers/chat.controller"
-import { Router } from 'express';
-import { authMiddleware } from '../middleware/http.middleware';
+import ChatController from "../controllers/chat.controller";
+import { Router } from "express";
+import { authMiddleware } from "../middleware/http.middleware";
 const router = Router();
 
 router.get(
-  '/privatemessages/:otherUserId',
+  "/privatemessages/:otherUserId",
   authMiddleware,
   ChatController.getPrivateMessages
 );
 router.get(
-  '/privatechatboxlist',
+  "/privatechatboxlist",
   authMiddleware,
-  ChatController.getPrivateChatBoxListController);
-router.post('/group', authMiddleware, ChatController.createGroup);
+  ChatController.getPrivateChatBoxListController
+);
+router.post("/group", authMiddleware, ChatController.createGroup);
 router.get(
-  '/groupchatboxlist',
+  "/groupchatboxlist",
   authMiddleware,
-  ChatController.getGroupChatBoxListController);
- 
+  ChatController.getGroupChatBoxListController
+);
+
 router.get(
-  '/groupmessages/:groupId',
+  "/groupmessages/:groupId",
   authMiddleware,
   ChatController.getGroupMessages
 );
+router.post(
+  "/directchat",
+  authMiddleware,
+  ChatController.createDirectChatController
+);
 
 export default router;
-

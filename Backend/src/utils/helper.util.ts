@@ -1,10 +1,10 @@
-import bcrypt from 'bcrypt';
-import { JwtEnvConfig } from '../types/env.types';
-import jwt from 'jsonwebtoken';
-import { Socket } from 'socket.io';
-import { Dialect } from 'sequelize';
-import { DatabaseConfig } from '../types/env.types';
-import { Request } from 'express';
+import bcrypt from "bcrypt";
+import { JwtEnvConfig } from "../types/env.types";
+import jwt from "jsonwebtoken";
+import { Socket } from "socket.io";
+import { Dialect } from "sequelize";
+import { DatabaseConfig } from "../types/env.types";
+import { Request } from "express";
 export const getEnvVar = (key: string): string => {
   const value = process.env[key];
   if (!value) {
@@ -13,17 +13,17 @@ export const getEnvVar = (key: string): string => {
   return value;
 };
 export const JWT_CONFIG: JwtEnvConfig = {
-  JWT_SECRET: getEnvVar('JWT_SECRET'),
-  JWT_EXPIRES_IN: getEnvVar('JWT_EXPIRES_IN'),
-  BCRYPT_SALT: getEnvVar('BCRYPT_SALT'),
+  JWT_SECRET: getEnvVar("JWT_SECRET"),
+  JWT_EXPIRES_IN: getEnvVar("JWT_EXPIRES_IN"),
+  BCRYPT_SALT: getEnvVar("BCRYPT_SALT"),
 };
 
 export const DB_CONFIG: DatabaseConfig = {
-  DB_NAME: getEnvVar('DB_NAME'),
-  DB_USER: getEnvVar('DB_USER'),
-  DB_PASS: getEnvVar('DB_PASS'),
-  DB_HOST: getEnvVar('DB_HOST'),
-  DB_DIALECT: getEnvVar('DB_DIALECT') as Dialect,
+  DB_NAME: getEnvVar("DB_NAME"),
+  DB_USER: getEnvVar("DB_USER"),
+  DB_PASS: getEnvVar("DB_PASS"),
+  DB_HOST: getEnvVar("DB_HOST"),
+  DB_DIALECT: getEnvVar("DB_DIALECT") as Dialect,
 };
 export interface AuthenticatedRequest extends Request {
   userId?: string;
@@ -32,46 +32,46 @@ export interface AuthenticatedRequest extends Request {
 export interface AuthenticatedSocket extends Socket {
   userId?: string;
 }
- 
+
 export const hashPassword = async (password: string): Promise<string> => {
   const salt = await bcrypt.genSalt(10);
   return bcrypt.hash(password, salt);
 };
 
-export const comparePassword = async (password: string, hashed: string): Promise<boolean> => {
+export const comparePassword = async (
+  password: string,
+  hashed: string
+): Promise<boolean> => {
   return bcrypt.compare(password, hashed);
 };
 
-export const getInputType = (input: string): 'email' | 'phone_number' => {
+export const getInputType = (input: string): "email" | "phone_number" => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phoneRegex = /^\+?[0-9]{10,15}$/;
 
-  if (emailRegex.test(input)) return 'email';
-  if (phoneRegex.test(input)) return 'phone_number';
-  throw new Error('Invalid input: must be a valid email or phone number');
+  if (emailRegex.test(input)) return "email";
+  if (phoneRegex.test(input)) return "phone_number";
+  throw new Error("Invalid input: must be a valid email or phone number");
 };
 
 export const generateToken = (payload: object): string => {
-  return jwt.sign(payload, JWT_CONFIG.JWT_SECRET, { expiresIn: '7d' });}
-
+  return jwt.sign(payload, JWT_CONFIG.JWT_SECRET, { expiresIn: "7d" });
+};
 
 export enum GroupMemberRole {
-  ADMIN = 'admin',
-  MEMBER = 'member',
+  ADMIN = "admin",
+  MEMBER = "member",
 }
 
 export enum MessageType {
-  TEXT = 'text',
-  IMAGE = 'image',
-  VIDEO = 'video',
-  FILE = 'file',
+  TEXT = "text",
+  IMAGE = "image",
+  VIDEO = "video",
+  FILE = "file",
+  SYSTEM = "system",
 }
 
-
-export enum RoomType{
-  GROUP,PRIVATE
+export enum RoomType {
+  GROUP,
+  PRIVATE,
 }
-
-
-
-

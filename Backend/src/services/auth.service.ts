@@ -8,7 +8,7 @@ import { AuthResult } from '../types/auth-result.types';
 import {JwtPayload} from "../types/jwt-payload.types"
 import jwt from 'jsonwebtoken';
 export const signupUser = async (input: Partial<IUserAttributes>) => {
-  const { error, value } = signupSchema.validate(input);
+  const { error, value } = signupSchema.validate(input); //todo:valdiions in controller
   if (error) throw new Error(`Validation error: ${error.details[0].message}`);
 
   
