@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
-import styles from './style.module.scss';
-import {
-  Groupicon,
-  GroupsIcon,
-  Directmessage,
-  arrowBottom,
-  logo
-} from '../../assets/icons'; 
+"use client";
 
+import React, { useEffect, useState } from "react";
+import styles from "./style.module.scss";
+import { useAuth } from "../../context/AuthContext";
+import { chatService } from "../../services/chatService";
+import { GroupsIcon, arrowBottom, logo } from "../../assets/icons";
+import { useChatList } from "../../hooks/useChat";
 interface Group {
   id: string;
   name: string;
@@ -16,69 +14,84 @@ interface Group {
 interface User {
   id: string;
   display_name: string;
-  avatar_url: string;
+  profile_picture?: string | null;
 }
 
 interface ChatData {
   id: string;
   name: string;
   avatar_url?: string;
-  type: 'group' | 'direct';
+  type: "group" | "direct";
 }
 
-type ViewType = 'splash' | 'groups' | 'directChat' | 'groupChat';
+type ViewType = "splash" | "groups" | "directChat" | "groupChat";
 
 interface QLURecruitingProps {
   onViewChange: (view: ViewType, chatData?: ChatData | null) => void;
+  registerRefresh?: (fn: () => void) => void; // optional prop to register refresh function
 }
 
-export default function QLURecruiting({ onViewChange }: QLURecruitingProps) {
+interface PrivateChat {
+  partnerId: string;
+  partner: User;
+  id?: string; // Optional for backward compatibility
+  lastMessage?: {
+    content: string;
+    timestamp: string;
+    sender: User;
+  };
+  unreadCount?: number;
+}
+
+export default function QLURecruiting({
+  onViewChange,
+  registerRefresh,
+}: QLURecruitingProps) {
+  const { token, user } = useAuth();
   const [isGroupsDropdownOpen, setIsGroupsDropdownOpen] = useState(true);
   const [isDirectDropdownOpen, setIsDirectDropdownOpen] = useState(true);
+  const [groups, setGroups] = useState<Group[]>([
+    { id: "1", name: "Group One" },
+    { id: "2", name: "Group Two" },
+  ]);
+  const {
+    chats: privateChats,
+    isLoading: loadingChats,
+    error: chatError,
+    refetch: loadPrivateChats,
+  } = useChatList();
 
-  const groups = [
-    { id: '1', name: 'Group One' },
-    { id: '2', name: 'Group Two' },
-  ];
-
-  const users = [
-    { id: 'a', display_name: 'Alice', avatar_url: '' },
-    { id: 'b', display_name: 'Bob', avatar_url: '' },
-  ];
+  React.useEffect(() => {
+    if (registerRefresh) registerRefresh(loadPrivateChats);
+    console.log("Registering refresh function");
+  }, [registerRefresh, loadPrivateChats]);
 
   const handleGroupsClick = (): void => {
-    console.log('Groups clicked');
-    onViewChange('groups');
+    onViewChange("groups");
   };
 
-  const handleDirectClick = () => console.log('Direct Messages clicked');
-
   const toggleGroupsDropdown = (): void => {
-    console.log('Toggle groups dropdown');
     setIsGroupsDropdownOpen(!isGroupsDropdownOpen);
   };
 
   const toggleDirectDropdown = (): void => {
-    console.log('Toggle direct dropdown');
     setIsDirectDropdownOpen(!isDirectDropdownOpen);
   };
 
   const handleGroupSelect = (group: Group): void => {
-    console.log('Selected group:', group);
-    onViewChange('groupChat', {
+    onViewChange("groupChat", {
       id: group.id,
       name: group.name,
-      type: 'group'
+      type: "group",
     });
   };
 
-  const handleUserSelect = (user: User): void => {
-    console.log('Selected user:', user);
-    onViewChange('directChat', {
-      id: user.id,
+  const handleUserSelect = (user: User, partnerId: string): void => {
+    onViewChange("directChat", {
+      id: partnerId,
       name: user.display_name,
-      avatar_url: user.avatar_url,
-      type: 'direct'
+      avatar_url: user.profile_picture || undefined,
+      type: "direct",
     });
   };
 
@@ -95,22 +108,18 @@ export default function QLURecruiting({ onViewChange }: QLURecruitingProps) {
           </span>
           <span className={styles.buttonLabel}>Groups</span>
         </button>
-
-        <button className={styles.sectionButton} onClick={handleDirectClick}>
-          <span className={styles.iconWrapper}>
-            <img src={Directmessage} alt="Direct Message Icon" />
-          </span>
-          <span className={styles.buttonLabel}>Direct Messages</span>
-        </button>
       </div>
 
       <div className={styles.navigation}>
+        {/* Groups Dropdown */}
         <div className={styles.navItem} onClick={toggleGroupsDropdown}>
-          <span 
+          <span
             className={styles.chevron}
-            style={{ 
-              transform: isGroupsDropdownOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-              transition: 'transform 0.2s ease'
+            style={{
+              transform: isGroupsDropdownOpen
+                ? "rotate(0deg)"
+                : "rotate(-90deg)",
+              transition: "transform 0.2s ease",
             }}
           >
             <img src={arrowBottom} alt="Chevron" />
@@ -135,12 +144,15 @@ export default function QLURecruiting({ onViewChange }: QLURecruitingProps) {
           </div>
         )}
 
+        {/* Direct Messages Dropdown */}
         <div className={styles.navItem} onClick={toggleDirectDropdown}>
-          <span 
+          <span
             className={styles.chevron}
-            style={{ 
-              transform: isDirectDropdownOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-              transition: 'transform 0.2s ease'
+            style={{
+              transform: isDirectDropdownOpen
+                ? "rotate(0deg)"
+                : "rotate(-90deg)",
+              transition: "transform 0.2s ease",
             }}
           >
             <img src={arrowBottom} alt="Chevron" />
@@ -150,23 +162,49 @@ export default function QLURecruiting({ onViewChange }: QLURecruitingProps) {
 
         {isDirectDropdownOpen && (
           <div className={styles.usersList}>
-            {users.map((user) => (
-              <div
-                key={user.id}
-                className={styles.userItem}
-                onClick={() => handleUserSelect(user)}
-              >
-                <div className={styles.userAvatarContainer}>
-                  <div
-                    className={styles.userAvatar}
-                    style={{
-                      background: `url(${user.avatar_url || logo}) center/cover no-repeat`,
-                    }}
-                  />
-                </div>
-                <span className={styles.userName}>{user.display_name}</span>
+            {loadingChats && <div>Loading chats...</div>}
+            {chatError && (
+              <div>
+                {chatError.message || "Failed to load chats"}
+                <button onClick={() => loadPrivateChats()}>Retry</button>
               </div>
-            ))}
+            )}
+            {!loadingChats && !chatError && privateChats.length === 0 && (
+              <div>No chats yet</div>
+            )}
+
+            {!loadingChats &&
+              privateChats.map((chat) => {
+                console.log(chat);
+                const partner = chat.partner;
+                if (!partner) return null;
+
+                return (
+                  <div
+                    key={chat.partnerId}
+                    className={styles.userItem}
+                    onClick={() => handleUserSelect(partner, chat.partnerId)}
+                  >
+                    <div className={styles.userAvatarContainer}>
+                      <div
+                        className={styles.userAvatar}
+                        style={{
+                          background: `url(${partner.profile_picture || logo}) center/cover no-repeat`,
+                        }}
+                      />
+                    </div>
+                    <span className={styles.userName}>
+                      {partner.display_name}
+                    </span>
+                    {/* {chat.unreadCount && chat.unreadCount > 0 && (
+                      <span className={styles.unreadBadge}>
+                        {chat.unreadCount}
+                      </span>
+                    )
+                    } */}
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>

@@ -1,47 +1,53 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Sidebar from '../Sidebar';
-import {QLURecruiting} from '../QLURecruiting'
-import DirectChat from '../DirectChat';
-import styles from './style.module.scss';
-import TopSearch from '../TopSearch';
-import Splash from '../Splash';
-import GroupsView from '../GroupsView';
-import GroupChat from '../GroupChat';
+import React, { useState, useRef } from "react";
+import Sidebar from "../Sidebar";
+import { QLURecruiting } from "../QLURecruiting";
+import DirectChat from "../DirectChat";
+import styles from "./style.module.scss";
+import TopSearch from "../TopSearch";
+import Splash from "../Splash";
+import GroupsView from "../GroupsView";
+import GroupChat from "../GroupChat";
 
 interface ChatData {
   id: string;
   name: string;
   avatar_url?: string;
-  type: 'group' | 'direct';
+  type: "group" | "direct";
 }
 
-type ViewType = 'splash' | 'groups' | 'directChat' | 'groupChat';
+type ViewType = "splash" | "groups" | "directChat" | "groupChat";
 
 export default function ChatShell() {
-const [activeView, setActiveView] = useState<ViewType>('splash');
-const [selectedChat, setSelectedChat] = useState<ChatData | null>(null);
- const handleGroupSelect = (group:any) => {
-    console.log('Selected group:', group);
-    // You can set selected group in state, navigate, etc.
+  const [activeView, setActiveView] = useState<ViewType>("splash");
+  const [selectedChat, setSelectedChat] = useState<ChatData | null>(null);
+
+  // Ref to store latest refresh function
+  const refreshChatsRef = useRef<() => void>(() => {});
+
+  const handleRegisterRefresh = (fn: () => void) => {
+    refreshChatsRef.current = fn;
   };
-  const handleViewChange = (view: ViewType, chatData: ChatData | null = null) => {
+
+  const handleViewChange = (
+    view: ViewType,
+    chatData: ChatData | null = null
+  ) => {
     setActiveView(view);
-    if (chatData) {
-      setSelectedChat(chatData);
-    }
+    if (chatData) setSelectedChat(chatData);
   };
+
   const renderMainContent = () => {
     switch (activeView) {
-      case 'splash':
+      case "splash":
         return <Splash />;
-      case 'groups':
-        return   <GroupsView onGroupSelect={handleGroupSelect} />
-      case 'directChat':
+      case "groups":
+        return <GroupsView onGroupSelect={() => {}} />;
+      case "directChat":
         return <DirectChat chatData={selectedChat} />;
-      case 'groupChat':
-          return <GroupChat groupId='1'/>;
+      case "groupChat":
+        return <div>pending</div>;
       default:
         return <Splash />;
     }
@@ -49,9 +55,16 @@ const [selectedChat, setSelectedChat] = useState<ChatData | null>(null);
 
   return (
     <main className={styles.main}>
-      <TopSearch />
+      <TopSearch
+        onViewChange={handleViewChange}
+        refreshChats={() => refreshChatsRef.current()}
+      />
+
       <Sidebar />
-      <QLURecruiting onViewChange={handleViewChange} />
+      <QLURecruiting
+        onViewChange={handleViewChange}
+        registerRefresh={handleRegisterRefresh}
+      />
       {renderMainContent()}
     </main>
   );

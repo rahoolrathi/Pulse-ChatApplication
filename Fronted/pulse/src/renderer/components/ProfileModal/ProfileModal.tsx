@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import styles from './style.module.scss';
-import { Button } from '../ui';
-
+import React, { useState, useEffect } from "react";
+import styles from "./style.module.scss";
+import { Button } from "../ui";
+import { modelClose } from "../../assets/icons";
 type ProfileModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -13,36 +13,73 @@ type User = {
   display_name: string;
   username: string;
   email: string;
-  status: string;
-  contact_number: string;
+  status_description: string;
+  phone_number: string;
   avatar_url?: string;
 };
-
-const mockUser: User = {
-  display_name: 'John Doe',
-  username: 'johnny',
-  email: 'john@example.com',
-  status: 'Living the dream 🌴',
-  contact_number: '+1 234 567 890',
-  avatar_url: '',
-};
-
+const API_BASE = "http://localhost:4000";
 const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
-  const [formData, setFormData] = useState(mockUser);
+  const [formData, setFormData] = useState<User | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setUser(mockUser);
-    setFormData(mockUser);
-    setPreviewUrl(mockUser.avatar_url || '');
-  }, []);
+    if (!isOpen) return;
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      console.error("No auth token found");
+      return;
+    }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`http://localhost:4000/api/profile/profile`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // auth header
+          },
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to fetch profile");
+        }
+
+        const apiUser = data.data;
+        const avatarUrl = apiUser.profile_picture
+          ? `${API_BASE}/${apiUser.profile_picture.replace(/\\/g, "/").replace(/^\/+/, "")}`
+          : "";
+
+        const formattedUser: User = {
+          display_name: apiUser.display_name || "",
+          username: apiUser.username || "",
+          email: apiUser.email || "",
+          status_description: apiUser.status_description || "",
+          phone_number: apiUser.phone_number || "",
+          avatar_url: avatarUrl || "",
+        };
+
+        setUser(formattedUser);
+        setFormData(formattedUser);
+        setPreviewUrl(formattedUser.avatar_url || "");
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [isOpen]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -59,27 +96,95 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleSaveProfile = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setUser((prev) => ({ ...prev!, ...formData, avatar_url: previewUrl }));
-      setIsEditing(false);
-      setAvatarFile(null);
-      setLoading(false);
-    }, 500);
-  };
+  const handleSaveUpdatedDetails = async (isProfile: boolean) => {
+    if (!formData) return;
 
-  const handleSaveContact = () => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      console.error("No auth token found");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setUser((prev) => ({ ...prev!, email: formData.email, contact_number: formData.contact_number }));
-      setShowContactModal(false);
+
+    try {
+      const form = new FormData();
+
+      if (isProfile) {
+        // Profile fields
+        if (formData.display_name?.trim()) {
+          form.append("display_name", formData.display_name);
+        }
+        if (formData.username?.trim()) {
+          form.append("username", formData.username);
+        }
+        if (formData.status_description?.trim()) {
+          form.append("status_description", formData.status_description);
+        }
+        if (avatarFile) {
+          form.append("profile_picture", avatarFile);
+        }
+      } else {
+        // Contact fields
+        if (formData.phone_number?.trim()) {
+          form.append("phone_number", formData.phone_number);
+        }
+        if (formData.email?.trim()) {
+          form.append("email", formData.email);
+        }
+      }
+
+      console.log("FormData entries:");
+      for (let [key, value] of form.entries()) {
+        console.log(key, value);
+      }
+
+      const res = await fetch(`http://localhost:4000/api/profile/edit`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Server response:", data);
+        throw new Error(data.error || "Failed to update profile");
+      }
+
+      const avatarUrl = data.data.profile_picture
+        ? `${API_BASE}/${data.data.profile_picture.replace(/\\/g, "/").replace(/^\/+/, "")}`
+        : "";
+
+      const updatedUser: User = {
+        display_name: data.data.display_name || "",
+        username: data.data.username || "",
+        email: data.data.email || "",
+        phone_number: data.data.phone_number || "",
+        status_description: data.data.status_description,
+        avatar_url: avatarUrl,
+      };
+
+      setUser(updatedUser);
+      setFormData(updatedUser);
+      if (isProfile) {
+        setPreviewUrl(avatarUrl);
+        setAvatarFile(null);
+        setIsEditing(false);
+      } else {
+        setShowContactModal(false);
+      }
+    } catch (err) {
+      console.error("Error updating details:", err);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   const removePhoto = () => {
-    setPreviewUrl('');
+    setPreviewUrl("");
     setAvatarFile(null);
   };
 
@@ -88,7 +193,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const shouldCenter = isEditing || showContactModal;
 
   return (
-    <div className={`${styles.modalOverlay} ${shouldCenter ? styles.centered : ''}`}>
+    <div
+      className={`${styles.modalOverlay} ${shouldCenter ? styles.centered : ""}`}
+    >
       <div className={styles.modalContainer}>
         {/* Profile View */}
         {!isEditing && !showContactModal && (
@@ -97,7 +204,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
               <div className={styles.headerContent}>
                 <span className={styles.title}>Profile</span>
                 <button className={styles.closeButton} onClick={onClose}>
-                  {/* <Icon name={'modalclose'} /> */}
+                  <img src={modelClose} alt="close model" />
                 </button>
               </div>
             </div>
@@ -106,8 +213,13 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
 
             <div className={styles.profileImage}>
               {user.avatar_url ? (
-  
-                <img src={user.avatar_url} alt="Profile" width={0} height={0} sizes="100vw" />
+                <img
+                  src={user.avatar_url}
+                  alt="Profile"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                />
               ) : (
                 <div className={styles.placeholderImage}></div>
               )}
@@ -116,7 +228,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
             <div className={styles.userInfo}>
               <div className={styles.nameSection}>
                 <span className={styles.displayName}>{user.display_name}</span>
-                <button className={styles.editButton} onClick={() => setIsEditing(true)}>
+                <button
+                  className={styles.editButton}
+                  onClick={() => setIsEditing(true)}
+                >
                   Edit
                 </button>
               </div>
@@ -126,7 +241,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className={styles.statusSection}>
-                <p className={styles.statusText}>{user.status}</p>
+                <p className={styles.statusText}>{user.status_description}</p>
               </div>
             </div>
 
@@ -136,14 +251,17 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
               <div className={styles.emailSection}>
                 <span className={styles.label}>Email Address</span>
                 <span className={styles.value}>{user.email}</span>
-                <button className={styles.editButton} onClick={() => setShowContactModal(true)}>
+                <button
+                  className={styles.editButton}
+                  onClick={() => setShowContactModal(true)}
+                >
                   Edit
                 </button>
               </div>
 
               <div className={styles.contactSection}>
                 <span className={styles.label}>Contact Number</span>
-                <span className={styles.value}>{user.contact_number}</span>
+                <span className={styles.value}>{user.phone_number}</span>
               </div>
 
               <div className={styles.addInfoSection}>
@@ -159,8 +277,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
             <div className={styles.header}>
               <div className={styles.headerContent}>
                 <span className={styles.title}>Edit your profile</span>
-                <button className={styles.closeButton} onClick={() => setIsEditing(false)}>
-                  {/* <Icon name={'modalclose'} /> */}
+                <button
+                  className={styles.closeButton}
+                  onClick={() => setIsEditing(false)}
+                >
+                  <img src={modelClose} alt="close model" />
                 </button>
               </div>
             </div>
@@ -194,8 +315,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
                 <div className={styles.formGroup}>
                   <label className={styles.fieldLabel}>Status</label>
                   <textarea
-                    name="status"
-                    value={formData.status}
+                    name="status_description"
+                    value={formData.status_description}
                     onChange={handleInputChange}
                     className={styles.textarea}
                     rows={5}
@@ -228,11 +349,14 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
                         type="file"
                         accept="image/*"
                         onChange={handleAvatarChange}
-                        style={{ display: 'none' }}
+                        style={{ display: "none" }}
                       />
                     </label>
 
-                    <button className={styles.removeButton} onClick={removePhoto}>
+                    <button
+                      className={styles.removeButton}
+                      onClick={removePhoto}
+                    >
                       Remove Photo
                     </button>
                   </div>
@@ -252,10 +376,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
               <Button
                 variant="filled"
                 className={styles.saveButton}
-                onClick={handleSaveProfile}
+                onClick={() => handleSaveUpdatedDetails(true)}
                 disabled={loading}
               >
-                {loading ? 'Saving...' : 'Save changes'}
+                {loading ? "Saving..." : "Save changes"}
               </Button>
             </div>
           </div>
@@ -267,8 +391,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
             <div className={styles.header}>
               <div className={styles.headerContent}>
                 <span className={styles.title}>Edit contact information</span>
-                <button className={styles.closeButton} onClick={() => setShowContactModal(false)}>
-                  {/* <Icon name={'modalclose'} /> */}
+                <button
+                  className={styles.closeButton}
+                  onClick={() => setShowContactModal(false)}
+                >
+                  <img src={modelClose} alt="close model" />
                 </button>
               </div>
             </div>
@@ -291,8 +418,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
                 <label className={styles.fieldLabel}>Contact number</label>
                 <input
                   type="tel"
-                  name="contact_number"
-                  value={formData.contact_number}
+                  name="phone_number"
+                  value={formData.phone_number}
                   onChange={handleInputChange}
                   className={styles.input}
                 />
@@ -304,11 +431,18 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
             </div>
 
             <div className={styles.actions}>
-              <button className={styles.cancelButton} onClick={() => setShowContactModal(false)}>
+              <button
+                className={styles.cancelButton}
+                onClick={() => setShowContactModal(false)}
+              >
                 Cancel
               </button>
-              <button className={styles.saveButton} onClick={handleSaveContact} disabled={loading}>
-                {loading ? 'Saving...' : 'Save changes'}
+              <button
+                className={styles.saveButton}
+                onClick={() => handleSaveUpdatedDetails(false)}
+                disabled={loading}
+              >
+                {loading ? "Saving..." : "Save changes"}
               </button>
             </div>
           </div>

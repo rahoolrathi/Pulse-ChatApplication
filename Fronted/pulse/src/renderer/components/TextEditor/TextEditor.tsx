@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 import {
   italicIcon,
   boldIcon,
@@ -8,30 +8,65 @@ import {
   dotList,
   alignLeft,
   seperator,
-  leftarrow,
-  rightarrow,
   roundadd,
   alpha,
   smile,
   video,
   mic,
-  square,
   send,
-} from '../../assets/icons'; // adjust paths as needed
-import styles from './style.module.scss';
+} from "../../assets/icons"; // adjust paths as needed
+import styles from "./style.module.scss";
+import { useSocket } from "../../context/SocketContext";
 
-type TextEditorProps = {
-  textTo?: string;
-};
+interface TextEditorProps {
+  textTo: string;
+  onSendMessage?: (content: string) => void;
+}
 
-const TextEditor: React.FC<TextEditorProps> = ({ textTo }) => {
-  const [message, setMessage] = useState('');
+const TextEditor: React.FC<TextEditorProps> = ({ textTo, onSendMessage }) => {
+  const [message, setMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isTyping, setIsTyping] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { isConnected } = useSocket();
+
+  // --- Auto-resize & input change ---
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
+    }
+  };
+
+  // --- Send message ---
+  const handleSendMessage = () => {
+    if ((message.trim() || imageFile) && onSendMessage) {
+      if (imageFile) {
+        onSendMessage(`📎 ${imageFile.name}`);
+        handleClearImage();
+      } else {
+        onSendMessage(message.trim());
+      }
+      setMessage("");
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // --- File upload ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -40,24 +75,17 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo }) => {
     }
   };
 
-  const triggerFileSelect = () => {
-    fileInputRef.current?.click();
-  };
+  const triggerFileSelect = () => fileInputRef.current?.click();
 
   const handleClearImage = () => {
     setImageFile(null);
     setPreviewUrl(null);
     setShowModal(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleImageClick = () => {
-    setShowModal(true);
-  };
-
-  const handleModalClose = () => {
-    setShowModal(false);
-  };
+  const handleImageClick = () => setShowModal(true);
+  const handleModalClose = () => setShowModal(false);
 
   return (
     <div className={styles.textEditorContainer}>
@@ -90,14 +118,16 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo }) => {
             <div className={styles.placeholder}>Message {textTo}</div>
           )}
           <textarea
+            ref={textareaRef}
             className={styles.inputField}
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={handleInputChange}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
+            onKeyPress={handleKeyPress}
             placeholder=""
             rows={1}
-            disabled={!!imageFile}
+            disabled={!!imageFile || !isConnected}
           />
         </div>
 
@@ -106,7 +136,10 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo }) => {
             <div className={styles.imageInfo} onClick={handleImageClick}>
               <span>📎 Image attached - Click to preview</span>
             </div>
-            <button onClick={handleClearImage} className={styles.clearImageButton}>
+            <button
+              onClick={handleClearImage}
+              className={styles.clearImageButton}
+            >
               ✕
             </button>
           </div>
@@ -118,7 +151,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo }) => {
               className={styles.expandButton}
               title="Attach Image"
               onClick={triggerFileSelect}
-              disabled={!!message.trim()}
+              disabled={!!message.trim() || !isConnected}
             >
               <img src={roundadd} alt="Attach media" />
             </button>
@@ -126,9 +159,9 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo }) => {
               type="file"
               ref={fileInputRef}
               accept="image/*"
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               onChange={handleFileChange}
-              disabled={!!message.trim()}
+              disabled={!!message.trim() || !isConnected}
             />
 
             <button className={styles.toolButton} title="Italic">
@@ -151,7 +184,12 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo }) => {
             <button className={styles.attachButton} title="Attach" />
           </div>
 
-          <button className={styles.sendButton} title="Send">
+          <button
+            className={styles.sendButton}
+            title="Send"
+            onClick={handleSendMessage}
+            disabled={(!message.trim() && !imageFile) || !isConnected}
+          >
             <img src={send} alt="Send icon" />
           </button>
         </div>
@@ -159,7 +197,10 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo }) => {
 
       {showModal && previewUrl && (
         <div className={styles.modal} onClick={handleModalClose}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
             <button className={styles.modalClose} onClick={handleModalClose}>
               ✕
             </button>
@@ -167,7 +208,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo }) => {
               src={previewUrl}
               alt="Preview"
               className={styles.modalImage}
-              style={{ width: '100%', height: 'auto' }}
+              style={{ width: "100%", height: "auto" }}
             />
           </div>
         </div>

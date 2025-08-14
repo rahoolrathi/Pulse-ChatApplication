@@ -3,7 +3,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: #E6EEF2;
+  background: #e6eef2;
 
   .splashScreen {
     flex: 1;
@@ -17,7 +17,7 @@
     .illustration {
       width: 500px;
       height: 500px;
-      background: url('/chat-illustration.svg') center/contain no-repeat;
+      background: url("/chat-illustration.svg") center/contain no-repeat;
     }
 
     .title {
@@ -27,8 +27,7 @@
       color: #214f6d;
       margin-bottom: 16px;
       letter-spacing: 0.05em;
-      font-family: 'Saira Stencil One';
-      
+      font-family: "Saira Stencil One";
     }
 
     .subtitle {
@@ -47,13 +46,13 @@
   }
 
   .chatHeader {
-    background: #E6EEF2;
+    background: #e6eef2;
     border-bottom: 1px solid #b7ddf2;
     display: flex;
     align-items: center;
     padding: 20px 32px;
     gap: 16px;
-    width:1096;
+    width: 1096;
     height: 59px;
 
     .backButton {
@@ -84,7 +83,7 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: url('/api/placeholder/40/40') center/cover;
+        background: url("/api/placeholder/40/40") center/cover;
         flex-shrink: 0;
       }
 
@@ -92,40 +91,33 @@
         font-size: 20px;
         font-weight: 700;
         color: #06334d;
-        margin: 0 0 4px 0;
+        margin: 0px 0px 4px 0px;
 
         .groupPrefix {
           color: #245e80;
-       
-        
         }
         .arrowIcon {
           width: 7px;
           height: 10px;
-          background: #06334D;
-          border: 1.5px solid #06334D;
-          transform: rotate(180deg);
-          flex: none;
-          order: 1;
-          flex-grow: 0;
+          border: 1.5px;
+          color: #06334d;
+          margin: 0px 4px 0px 4px;
+          size: 20;
         }
       }
       .headerActions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+        display: flex;
+        align-items: center;
+        gap: 64px;
 
-      .actionIcon {
-        width: 24px;
-        height: 24px;
-        cursor: pointer;
-        transition: opacity 0.2s ease;
-
-        &:hover {
-          opacity: 0.7;
+        .actionIcon {
+          width: 40px;
+          height: 40px;
+          top: 10px;
+          border-radius: 8px;
+          padding: 8px;
         }
       }
-    }
 
       .groupDescription,
       .directDescription {
@@ -149,7 +141,7 @@
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: url('/api/placeholder/32/32') center/cover;
+        background: url("/api/placeholder/32/32") center/cover;
         border: 2px solid #f2f9ff;
         margin-left: -8px;
 
@@ -164,9 +156,6 @@
         margin-left: 8px;
       }
     }
-    
-  
-  
   }
 
   .messagesList {
@@ -174,7 +163,7 @@
     overflow-y: auto;
     padding: 20px 32px;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: 16px;
 
     &::-webkit-scrollbar {

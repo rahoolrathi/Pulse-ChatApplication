@@ -1,34 +1,82 @@
-'use client';
+"use client";
 
-import React from 'react';
-import styles from './style.module.scss';
-import { logo } from '../../assets/icons';
-// import { formatTimestamp } from '@/lib/utils';
+import React from "react";
+import styles from "./style.module.scss";
+import { logo } from "../../assets/icons";
+import { useAuth } from "../../context/AuthContext";
+import { Message } from "../../types";
+const SERVER_URL = "http://localhost:4000";
 
-export default function Message() {
-  // Static example message data
-  const message = {
-    user: {
-      avatar_url: logo,
-      display_name: 'John Doe',
-    },
-    content: 'Hello, this is a static message!',
-    timestamp: new Date().toISOString(),
-  };
+/**
+ * Returns a browser-friendly avatar URL
+ * @param profilePath - the path from backend
+ */
+export function getAvatarUrl(profilePath?: string) {
+  if (!profilePath) return logo; // fallback to default logo
+  // Replace backslashes with forward slashes and prepend server URL
+  return `${SERVER_URL}${profilePath.replace(/\\/g, "/")}`;
+}
+const formatTimestamp = (timestamp: string): string => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
+  if (diffInHours < 24) {
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } else if (diffInHours < 168) {
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } else {
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+};
+
+type MessageProps = {
+  message: Message;
+};
+
+export default function Message({ message }: MessageProps) {
+  const { user } = useAuth();
+  const isOwnMessage = message.senderId === user?.id;
+  console.log(message);
   return (
-    <div className={styles.message}>
+    <div
+      className={`${styles.message} ${
+        isOwnMessage ? styles.ownMessage : styles.otherMessage
+      }`}
+    >
+      {/* Avatar for both own & others */}
       <div
         className={styles.avatar}
         style={{
-          backgroundImage: `url(${message.user.avatar_url})`,
+          backgroundImage: `url(${
+            isOwnMessage ? logo : getAvatarUrl(message.sender?.profile_picture)
+          })`,
         }}
       />
+
+      {/* Content */}
       <div className={styles.content}>
         <div className={styles.header}>
-          <span className={styles.username}>{message.user.display_name}</span>
+          <span className={styles.username}>
+            {isOwnMessage ? "You" : message.sender.display_name}
+          </span>
           <span className={styles.timestamp}>
-            {/* {formatTimestamp(message.timestamp).match(/\d{1,2}:\d{2} [AP]M/)?.[0]} */}
+            {formatTimestamp(message.sentAt)}
           </span>
         </div>
         <div className={styles.messageText}>{message.content}</div>
