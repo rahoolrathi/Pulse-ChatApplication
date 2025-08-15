@@ -4,7 +4,7 @@ import React from "react";
 import styles from "./style.module.scss";
 import MessageComponent from "../Message";
 import TextEditor from "../TextEditor";
-import { rightfilledarrow, mic, video } from "../../assets/icons";
+import { rightfilledarrow, filledmic, filledvideo } from "../../assets/icons";
 import { useChatMessages } from "../../hooks/useChat";
 import { useSendMessage } from "../../hooks/useChat";
 
@@ -55,10 +55,9 @@ const DirectChat = ({ chatData }: DirectChatProps) => {
             />
           </h2>
         </div>
-        <div className={styles.headerActions}>
-          <img src={mic} alt="mic" className={styles.actionIcon} />
-          <img src={video} alt="video" className={styles.actionIcon} />
-        </div>
+
+        <img src={filledmic} alt="mic" className={styles.actionIcon} />
+        <img src={filledvideo} alt="video" className={styles.actionIcon} />
       </div>
 
       {/* Messages */}
@@ -68,9 +67,12 @@ const DirectChat = ({ chatData }: DirectChatProps) => {
           <div className={styles.noMessages}>No messages yet</div>
         )}
         {!isLoading &&
-          messages.map((msg) => (
-            <MessageComponent key={msg.id} message={msg} />
-          ))}
+          messages
+            .slice()
+            .reverse()
+            .map((message) => (
+              <MessageComponent key={message.id} message={message} />
+            ))}
       </div>
 
       {/* Text Editor */}

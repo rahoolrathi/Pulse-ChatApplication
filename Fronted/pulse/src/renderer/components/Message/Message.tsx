@@ -16,34 +16,6 @@ export function getAvatarUrl(profilePath?: string) {
   // Replace backslashes with forward slashes and prepend server URL
   return `${SERVER_URL}${profilePath.replace(/\\/g, "/")}`;
 }
-const formatTimestamp = (timestamp: string): string => {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-
-  if (diffInHours < 24) {
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  } else if (diffInHours < 168) {
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  } else {
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  }
-};
 
 type MessageProps = {
   message: Message;
@@ -74,9 +46,6 @@ export default function Message({ message }: MessageProps) {
         <div className={styles.header}>
           <span className={styles.username}>
             {isOwnMessage ? "You" : message.sender.display_name}
-          </span>
-          <span className={styles.timestamp}>
-            {formatTimestamp(message.sentAt)}
           </span>
         </div>
         <div className={styles.messageText}>{message.content}</div>

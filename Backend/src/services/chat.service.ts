@@ -154,19 +154,31 @@ export class ChatService {
         where: { id: groupIds },
         attributes: ["id", "name", "description", "createdBy"],
       });
-
+      const allGroupMembers = await GroupMember.findAll({
+        where: { groupId: groupIds },
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "profile_picture", "display_name"],
+          },
+        ],
+      });
       // Format the response
       const groupChatBoxList = userGroups.map((membership) => {
         const group = groups.find((g) => g.id === membership.groupId);
+        const members = allGroupMembers
+          .filter((gm) => gm.groupId === membership.groupId)
+          .map((gm) => ({
+            id: gm.user?.id,
+            profile_picture: gm.user?.profile_picture,
+            display_name: gm.user?.display_name,
+          }));
+
         return {
           groupId: membership.groupId,
-          group: {
-            id: group?.id,
-            name: group?.name,
-            description: group?.description,
-            createdBy: group?.createdBy,
-          },
-          userRole: membership.role,
+          name: group?.name,
+          members: members,
         };
       });
 
@@ -260,10 +272,13 @@ export class ChatService {
       if (!receiver) {
         throw new Error("Receiver not found");
       }
+
       const conversationKey = this.getPrivateConversationKey(
         currentUserId,
         otherUserId
       );
+
+      
       const cachedMessages = await redisClient.lrange(
         conversationKey,
         0,
@@ -271,7 +286,11 @@ export class ChatService {
       );
 
       if (cachedMessages.length > 0) {
-        const messages = cachedMessages.map((msg) => JSON.parse(msg)).reverse();
+        const messages = cachedMessages
+          .map((msg) => JSON.parse(msg))
+          .filter((msg) => msg.content !== "__placeholder__") // exclude placeholders
+          .reverse();
+
         return {
           messages,
           fromCache: true,
@@ -279,12 +298,20 @@ export class ChatService {
         };
       }
 
+      // --- DB query ---
       const offset = (page - 1) * limit;
       const messages = await Message.findAll({
         where: {
-          [Op.or]: [
-            { senderId: currentUserId, recipientId: otherUserId },
-            { senderId: otherUserId, recipientId: currentUserId },
+          [Op.and]: [
+            {
+              [Op.or]: [
+                { senderId: currentUserId, recipientId: otherUserId },
+                { senderId: otherUserId, recipientId: currentUserId },
+              ],
+            },
+            {
+              messageTxt: { [Op.ne]: "__placeholder__" }, // exclude placeholder
+            },
           ],
         },
         include: [

@@ -4,13 +4,18 @@ import React, { useEffect, useState } from "react";
 import styles from "./style.module.scss";
 import { useAuth } from "../../context/AuthContext";
 import { chatService } from "../../services/chatService";
-import { GroupsIcon, arrowBottom, logo } from "../../assets/icons";
+import { GroupsIcon, arrowBottom, logo, chat } from "../../assets/icons";
 import { useChatList } from "../../hooks/useChat";
 import { useGroupChatList } from "../../hooks/useChat"; // path to your hook
-
-interface Group {
+interface Members {
   id: string;
+  profile_picture: string;
+  display_name: string;
+}
+interface Group {
+  groupId: string;
   name: string;
+  members: Members[];
 }
 
 interface User {
@@ -23,6 +28,7 @@ interface ChatData {
   id: string;
   name: string;
   avatar_url?: string;
+  members?: Members[];
   type: "group" | "direct";
 }
 
@@ -44,7 +50,7 @@ interface PrivateChat {
   };
   unreadCount?: number;
 }
-
+const API_BASE = "http://localhost:4000";
 export default function QLURecruiting({
   onViewChange,
   registerRefresh,
@@ -84,8 +90,9 @@ export default function QLURecruiting({
 
   const handleGroupSelect = (group: Group): void => {
     onViewChange("groupChat", {
-      id: group.id,
+      id: group.groupId,
       name: group.name,
+      members: group.members,
       type: "group",
     });
   };
@@ -111,6 +118,14 @@ export default function QLURecruiting({
             <img src={GroupsIcon} alt="Groups Icon" />
           </span>
           <span className={styles.buttonLabel}>Groups</span>
+        </button>
+      </div>
+      <div className={styles.buttonsWrapper}>
+        <button className={styles.sectionButton}>
+          <span className={styles.iconWrapper}>
+            <img src={chat} alt="chat icon" />
+          </span>
+          <span className={styles.buttonLabel}>Direct Messages</span>
         </button>
       </div>
 
@@ -142,12 +157,12 @@ export default function QLURecruiting({
                 <div
                   key={group.groupId}
                   className={styles.groupItem}
-                  onClick={() => handleGroupSelect(group.group)}
+                  onClick={() => handleGroupSelect(group)}
                 >
                   <span className={styles.groupIcon}>
                     <img src={logo} alt="Group Icon" />
                   </span>
-                  <span className={styles.groupName}>{group.group.name}</span>
+                  <span className={styles.groupName}>{group.name}</span>
                 </div>
               ))}
           </div>
@@ -198,7 +213,9 @@ export default function QLURecruiting({
                       <div
                         className={styles.userAvatar}
                         style={{
-                          background: `url(${partner.profile_picture || logo}) center/cover no-repeat`,
+                          background: partner.profile_picture
+                            ? `url(${API_BASE}/${partner.profile_picture.replace(/\\/g, "/").replace(/^\/+/, "")}) center/cover no-repeat`
+                            : `url(${logo}) center/cover no-repeat`,
                         }}
                       />
                     </div>

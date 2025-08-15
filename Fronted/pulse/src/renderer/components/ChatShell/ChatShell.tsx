@@ -10,11 +10,17 @@ import Splash from "../Splash";
 import GroupsView from "../GroupsView";
 import GroupChat from "../GroupChat";
 
+interface Members {
+  id: string;
+  profile_picture: string;
+  display_name: string;
+}
 interface ChatData {
   id: string;
   name: string;
   avatar_url?: string;
   type: "group" | "direct";
+  members?: Members[];
 }
 
 type ViewType = "splash" | "groups" | "directChat" | "groupChat";
@@ -47,7 +53,15 @@ export default function ChatShell() {
       case "directChat":
         return <DirectChat chatData={selectedChat} />;
       case "groupChat":
-        return <GroupChat groupId={selectedChat.id} />;
+        return (
+          <GroupChat
+            groupData={{
+              id: selectedChat.id,
+              name: selectedChat.name,
+              members: selectedChat.members,
+            }}
+          />
+        );
       default:
         return <Splash />;
     }

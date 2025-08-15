@@ -22,15 +22,15 @@ interface Userprofiles {
   profile_picture: string | null;
   email: string;
 }
+interface Members {
+  id: string;
+  profile_picture: string;
+  display_name:string
+}
 interface GroupChatBox {
   groupId: string;
-  group: {
-    id: string;
-    name: string;
-    description?: string;
-    createdBy: string;
-  };
-  userRole: "admin" | "member";
+  name: string;
+  members: Members[];
 }
 interface GroupChatBoxListResponse {
   success: boolean;

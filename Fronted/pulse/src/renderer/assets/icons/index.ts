@@ -34,6 +34,9 @@ import logo from "./logo.svg";
 import rightfilledarrow from "./fillrightarrow.svg";
 import teright from "./teright.svg";
 import teleft from "./teleft.svg";
+import chat from "./chat.svg";
+import filledvideo from "./filledvideo.svg";
+import filledmic from "./filledmic.svg";
 export {
   menSvg,
   menHoverSvg,
@@ -71,4 +74,7 @@ export {
   arrowBottom,
   logo,
   rightfilledarrow,
+  chat,
+  filledvideo,
+  filledmic,
 };

@@ -19,16 +19,6 @@ export interface GroupMember {
     profile_picture: string | null;
   };
 }
-interface GroupChatBox {
-  groupId: string;
-  group: {
-    id: string;
-    name: string;
-    description?: string;
-    createdBy: string;
-  };
-  userRole: "admin" | "member";
-}
 export interface GroupResponse {
   id: string;
   name: string;
@@ -44,15 +34,15 @@ export interface User {
   display_name: string;
   profile_picture?: string | null;
 }
+interface Members {
+  id: string;
+  profile_picture: string;
+  display_name: string;
+}
 interface GroupChatBox {
   groupId: string;
-  group: {
-    id: string;
-    name: string;
-    description?: string;
-    createdBy: string;
-  };
-  userRole: "admin" | "member";
+  name: string;
+  members: Members[];
 }
 interface GroupsViewProps {
   onGroupSelect: (group: GroupChatBox) => void;
@@ -64,7 +54,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
   const {
     data: groups = [],
     isLoading: groupsLoading,
-    refetchGroupChats, 
+    refetchGroupChats,
   } = useGroupChatList();
 
   const [showModal, setShowModal] = useState(false);
@@ -176,16 +166,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
               onClick={() => onGroupSelect(group)}
             >
               <div className={styles.groupInfo}>
-                <span className={styles.groupName}>{group.group.name}</span>
-                {group.group.description && (
-                  <span className={styles.groupDescription}>
-                    {group.group.description}
-                  </span>
-                )}
-                <span className={styles.memberCount}>
-                  {/* {} member
-                  { !== 1 ? "s" : ""} */}
-                </span>
+                <span className={styles.groupName}>{group.name}</span>
               </div>
             </div>
           ))
