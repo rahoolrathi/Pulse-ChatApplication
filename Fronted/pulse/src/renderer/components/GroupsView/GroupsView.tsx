@@ -1,85 +1,138 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import styles from './style.module.scss';
-// import Icon from '../Icon';
+import React, { useState, useRef, useEffect } from "react";
+import styles from "./style.module.scss";
+import { chatService } from "../../services/chatService";
+import { useAllUsers } from "../../hooks/useChat";
+import { useAuth } from "../../context/AuthContext";
+import { useGroupChatList } from "../../hooks/useChat"; // import the hook
 
-type Group = {
+// Interfaces
+export interface GroupMember {
+  groupId: string;
+  userId: string;
+  role: "admin" | "member";
+  joinedAt: string;
+  user: {
+    id: string;
+    display_name: string;
+    profile_picture: string | null;
+  };
+}
+interface GroupChatBox {
+  groupId: string;
+  group: {
+    id: string;
+    name: string;
+    description?: string;
+    createdBy: string;
+  };
+  userRole: "admin" | "member";
+}
+export interface GroupResponse {
   id: string;
   name: string;
   description?: string;
-  member_count?: number;
-};
+  createdBy: string;
+  createdAt: string;
+  members: GroupMember[];
+}
 
-type User = {
+export interface User {
   id: string;
   username: string;
-};
-
-type GroupsViewProps = {
-  onGroupSelect: (group: Group) => void;
-};
-
-const mockUsers: User[] = [
-  { id: '1', username: 'Alice' },
-  { id: '2', username: 'Bob' },
-  { id: '3', username: 'Charlie' },
-  { id: '4', username: 'David' },
-];
+  display_name: string;
+  profile_picture?: string | null;
+}
+interface GroupChatBox {
+  groupId: string;
+  group: {
+    id: string;
+    name: string;
+    description?: string;
+    createdBy: string;
+  };
+  userRole: "admin" | "member";
+}
+interface GroupsViewProps {
+  onGroupSelect: (group: GroupChatBox) => void;
+}
 
 const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
+  const { token } = useAuth();
+  const { data: users = [], isLoading: usersLoading } = useAllUsers();
+  const {
+    data: groups = [],
+    isLoading: groupsLoading,
+    refetchGroupChats, 
+  } = useGroupChatList();
+
   const [showModal, setShowModal] = useState(false);
-  const [groupName, setGroupName] = useState('');
-  const [groupDescription, setGroupDescription] = useState('');
+  const [groupName, setGroupName] = useState("");
+  const [groupDescription, setGroupDescription] = useState("hii");
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowUserDropdown(false);
       }
     };
 
     if (showUserDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showUserDropdown]);
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     if (!groupName.trim()) {
-      alert('Please enter a group name');
+      alert("Please enter a group name");
       return;
     }
 
     if (selectedUserIds.length === 0) {
-      alert('Please select at least one member');
+      alert("Please select at least one member");
       return;
     }
 
-    const newGroup: Group = {
-      id: Date.now().toString(),
-      name: groupName,
-      description: groupDescription,
-      member_count: selectedUserIds.length,
-    };
+    if (!token) {
+      alert("You are not authenticated");
+      return;
+    }
 
-    setGroups((prev) => [...prev, newGroup]);
-    setGroupName('');
-    setGroupDescription('');
-    setSelectedUserIds([]);
-    setShowModal(false);
-    setShowUserDropdown(false);
+    try {
+      await chatService.createGroup(
+        token,
+        groupName,
+        groupDescription,
+        selectedUserIds
+      );
+
+      // Refetch the group list after creating a new group
+      refetchGroupChats();
+
+      setGroupName("");
+      setGroupDescription("hii");
+      setSelectedUserIds([]);
+      setShowModal(false);
+      setShowUserDropdown(false);
+    } catch (error) {
+      console.error("Error creating group:", error);
+      alert("Failed to create group");
+    }
   };
 
   const toggleUserSelection = (id: string) => {
@@ -90,8 +143,8 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
 
   const closeModal = () => {
     setShowModal(false);
-    setGroupName('');
-    setGroupDescription('');
+    setGroupName("");
+    setGroupDescription("");
     setSelectedUserIds([]);
     setShowUserDropdown(false);
   };
@@ -100,28 +153,39 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
     <div className={styles.groupsView}>
       <div className={styles.header}>
         <h2 className={styles.title}>Groups</h2>
-        <button className={styles.createButton} onClick={() => setShowModal(true)}>
-          {/* <Icon name="plus" /> */}
+        <button
+          className={styles.createButton}
+          onClick={() => setShowModal(true)}
+        >
           <span>Create New Group</span>
         </button>
       </div>
 
       <div className={styles.groupsList}>
-        {groups.length === 0 ? (
+        {groupsLoading ? (
+          <p>Loading groups...</p>
+        ) : groups.length === 0 ? (
           <div className={styles.emptyState}>
             <p>No groups found. Create your first group!</p>
           </div>
         ) : (
           groups.map((group) => (
-            <div key={group.id} className={styles.groupCard} onClick={() => onGroupSelect(group)}>
+            <div
+              key={group.groupId}
+              className={styles.groupCard}
+              onClick={() => onGroupSelect(group)}
+            >
               <div className={styles.groupInfo}>
-                <span className={styles.groupName}>{group.name}</span>
-                {group.description && (
-                  <span className={styles.groupDescription}>{group.description}</span>
+                <span className={styles.groupName}>{group.group.name}</span>
+                {group.group.description && (
+                  <span className={styles.groupDescription}>
+                    {group.group.description}
+                  </span>
                 )}
-                {group.member_count && (
-                  <span className={styles.memberCount}>{group.member_count} members</span>
-                )}
+                <span className={styles.memberCount}>
+                  {/* {} member
+                  { !== 1 ? "s" : ""} */}
+                </span>
               </div>
             </div>
           ))
@@ -133,9 +197,10 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
               <h3>Create New Group</h3>
-              <button className={styles.closeButton} onClick={closeModal}>
-                {/* <Icon name={'modalclose'} /> */}
-              </button>
+              <button
+                className={styles.closeButton}
+                onClick={closeModal}
+              ></button>
             </div>
 
             <hr className={styles.divider} />
@@ -160,13 +225,12 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
                   >
                     <div className={styles.selected}>
                       {selectedUserIds.length
-                        ? mockUsers
-                            .filter((u) => selectedUserIds.includes(u.id))
-                            .map((u) => u.username)
-                            .join(', ')
-                        : 'Select members'}
+                        ? users
+                            .filter((u: any) => selectedUserIds.includes(u.id))
+                            .map((u: any) => u.username)
+                            .join(", ")
+                        : "Select members"}
                     </div>
-                    {/* <Icon name="chevrondown" /> */}
                   </div>
 
                   {showUserDropdown && (
@@ -180,12 +244,17 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
                         autoFocus
                       />
 
-                      {mockUsers
-                        .filter((u) =>
-                          u.username.toLowerCase().includes(searchTerm.toLowerCase())
+                      {users
+                        .filter((u: any) =>
+                          u.username
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase())
                         )
-                        .map((user) => (
-                          <label key={user.id} className={styles.checkboxOption}>
+                        .map((user: any) => (
+                          <label
+                            key={user.id}
+                            className={styles.checkboxOption}
+                          >
                             <input
                               type="checkbox"
                               checked={selectedUserIds.includes(user.id)}
@@ -200,7 +269,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
                 {selectedUserIds.length > 0 && (
                   <small className={styles.selectedCount}>
                     {selectedUserIds.length} member
-                    {selectedUserIds.length !== 1 ? 's' : ''} selected
+                    {selectedUserIds.length !== 1 ? "s" : ""} selected
                   </small>
                 )}
               </div>
@@ -210,7 +279,11 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
               <button
                 className={styles.saveButton}
                 onClick={handleCreateGroup}
-                disabled={!groupName.trim() || selectedUserIds.length === 0}
+                disabled={
+                  !groupName.trim() ||
+                  selectedUserIds.length === 0 ||
+                  usersLoading
+                }
               >
                 Create Group
               </button>

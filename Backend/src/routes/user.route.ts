@@ -6,6 +6,7 @@ import { upload } from "../utils/multer";
 const router = Router();
 
 router.get("/profile", authMiddleware, UserController.getProfile);
+router.get("/allprofile", authMiddleware, UserController.getAllProfiles);
 router.put(
   "/edit",
   authMiddleware,

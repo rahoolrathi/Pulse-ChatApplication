@@ -14,6 +14,8 @@ import {
   video,
   mic,
   send,
+  teright,
+  teleft,
 } from "../../assets/icons"; // adjust paths as needed
 import styles from "./style.module.scss";
 import { useSocket } from "../../context/SocketContext";
@@ -109,7 +111,10 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo, onSendMessage }) => {
           </button>
           <div className={styles.separator} />
           <button className={styles.toolbarButton} title="Code">
-            <img src={seperator} alt="Code icon" />
+            <img src={teleft} alt="Code icon" />
+          </button>
+          <button className={styles.toolbarButton} title="Code">
+            <img src={teright} alt="Code icon" />
           </button>
         </div>
 
@@ -173,14 +178,20 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo, onSendMessage }) => {
             <button className={styles.toolButton} title="Emoji">
               <img src={smile} alt="Emoji icon" />
             </button>
-            <div className={styles.separator} />
+            <button className={styles.toolButton} title="Mic">
+              <img src={seperator} alt="seperator" />
+            </button>
             <button className={styles.toolButton} title="Video">
               <img src={video} alt="Video icon" />
             </button>
-            <button className={styles.toolButton} title="Mic">
+            <div className={styles.separator}>
+              {" "}
               <img src={mic} alt="Mic icon" />
+            </div>
+            <button className={styles.toolButton} title="Mic">
+              <img src={seperator} alt="seperator" />
             </button>
-            <div className={styles.separator} />
+
             <button className={styles.attachButton} title="Attach" />
           </div>
 

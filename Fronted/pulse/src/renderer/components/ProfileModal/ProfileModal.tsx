@@ -4,9 +4,12 @@ import React, { useState, useEffect } from "react";
 import styles from "./style.module.scss";
 import { Button } from "../ui";
 import { modelClose } from "../../assets/icons";
+
 type ProfileModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  user: User | null;
+  onProfileUpdate: (updatedUser: User) => void;
 };
 
 type User = {
@@ -17,9 +20,15 @@ type User = {
   phone_number: string;
   avatar_url?: string;
 };
+
 const API_BASE = "http://localhost:4000";
-const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
-  const [user, setUser] = useState<User | null>(null);
+
+const ProfileModal: React.FC<ProfileModalProps> = ({
+  isOpen,
+  onClose,
+  user,
+  onProfileUpdate,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [formData, setFormData] = useState<User | null>(null);
@@ -27,62 +36,20 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
+  // Update form data when user prop changes
   useEffect(() => {
-    if (!isOpen) return;
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      console.error("No auth token found");
-      return;
+    if (user) {
+      setFormData(user);
+      setPreviewUrl(user.avatar_url || "");
     }
-
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`http://localhost:4000/api/profile/profile`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // auth header
-          },
-        });
-
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to fetch profile");
-        }
-
-        const apiUser = data.data;
-        const avatarUrl = apiUser.profile_picture
-          ? `${API_BASE}/${apiUser.profile_picture.replace(/\\/g, "/").replace(/^\/+/, "")}`
-          : "";
-
-        const formattedUser: User = {
-          display_name: apiUser.display_name || "",
-          username: apiUser.username || "",
-          email: apiUser.email || "",
-          status_description: apiUser.status_description || "",
-          phone_number: apiUser.phone_number || "",
-          avatar_url: avatarUrl || "",
-        };
-
-        setUser(formattedUser);
-        setFormData(formattedUser);
-        setPreviewUrl(formattedUser.avatar_url || "");
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [isOpen]);
+  }, [user]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
-      ...prev,
+      ...prev!,
       [name]: value,
     }));
   };
@@ -167,8 +134,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
         avatar_url: avatarUrl,
       };
 
-      setUser(updatedUser);
+      // Update both local state and parent component
       setFormData(updatedUser);
+      onProfileUpdate(updatedUser); // This updates the sidebar
+
       if (isProfile) {
         setPreviewUrl(avatarUrl);
         setAvatarFile(null);
@@ -295,7 +264,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
                   <input
                     type="text"
                     name="display_name"
-                    value={formData.display_name}
+                    value={formData?.display_name || ""}
                     onChange={handleInputChange}
                     className={styles.input}
                   />
@@ -306,7 +275,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
                   <input
                     type="text"
                     name="username"
-                    value={formData.username}
+                    value={formData?.username || ""}
                     onChange={handleInputChange}
                     className={styles.input}
                   />
@@ -316,7 +285,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
                   <label className={styles.fieldLabel}>Status</label>
                   <textarea
                     name="status_description"
-                    value={formData.status_description}
+                    value={formData?.status_description || ""}
                     onChange={handleInputChange}
                     className={styles.textarea}
                     rows={5}
@@ -408,7 +377,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
                 <input
                   type="email"
                   name="email"
-                  value={formData.email}
+                  value={formData?.email || ""}
                   onChange={handleInputChange}
                   className={styles.input}
                 />
@@ -419,7 +388,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
                 <input
                   type="tel"
                   name="phone_number"
-                  value={formData.phone_number}
+                  value={formData?.phone_number || ""}
                   onChange={handleInputChange}
                   className={styles.input}
                 />

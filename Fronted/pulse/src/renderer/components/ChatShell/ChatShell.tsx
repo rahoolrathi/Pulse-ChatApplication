@@ -47,7 +47,7 @@ export default function ChatShell() {
       case "directChat":
         return <DirectChat chatData={selectedChat} />;
       case "groupChat":
-        return <div>pending</div>;
+        return <GroupChat groupId={selectedChat.id} />;
       default:
         return <Splash />;
     }

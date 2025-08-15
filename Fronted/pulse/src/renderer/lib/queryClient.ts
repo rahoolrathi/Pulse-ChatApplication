@@ -21,4 +21,6 @@ export const queryKeys = {
   userSearch: (query: string) => ["userSearch", query] as const,
   groupList: ["groupList"] as const,
   groupMessages: (groupId: string) => ["groupMessages", groupId] as const,
+  allUsers: ["allUsers"] as const,
+  groupChatList: ["groupChatList"] as const,
 } as const;

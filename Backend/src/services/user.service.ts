@@ -13,6 +13,19 @@ export const getProfile = async (userId: string) => {
   return user;
 };
 
+export const getAllProfiles = async (currentUserId?: string) => {
+  const whereCondition = currentUserId
+    ? { id: { [Op.ne]: currentUserId } }
+    : {};
+
+  const users = await User.findAll({
+    where: whereCondition,
+    attributes: ["id", "username", "display_name", "profile_picture", "email"],
+  });
+
+  return users;
+};
+
 export const editUserProfile = async (
   userId: string,
   input: IEditUserAttributes

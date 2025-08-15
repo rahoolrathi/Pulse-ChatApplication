@@ -1,5 +1,5 @@
-import { Message } from "./Message";
-import { MessagesResponse } from "./MessagesResponse";
+import { Message, groupMessage } from "./Message";
+import { MessagesResponse, groupMessagesResponse } from "./MessagesResponse";
 import { ChatUser } from "./ChatUser";
 import { PrivateChat } from "./PrivateChat";
 import { PrivateChatListResponse } from "./PrivateChatListResponse";
@@ -10,4 +10,6 @@ export {
   ChatUser,
   PrivateChat,
   PrivateChatListResponse,
+  groupMessagesResponse,
+  groupMessage,
 };

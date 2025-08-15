@@ -6,6 +6,8 @@ import { useAuth } from "../../context/AuthContext";
 import { chatService } from "../../services/chatService";
 import { GroupsIcon, arrowBottom, logo } from "../../assets/icons";
 import { useChatList } from "../../hooks/useChat";
+import { useGroupChatList } from "../../hooks/useChat"; // path to your hook
+
 interface Group {
   id: string;
   name: string;
@@ -50,10 +52,12 @@ export default function QLURecruiting({
   const { token, user } = useAuth();
   const [isGroupsDropdownOpen, setIsGroupsDropdownOpen] = useState(true);
   const [isDirectDropdownOpen, setIsDirectDropdownOpen] = useState(true);
-  const [groups, setGroups] = useState<Group[]>([
-    { id: "1", name: "Group One" },
-    { id: "2", name: "Group Two" },
-  ]);
+  const {
+    data: groups = [],
+    isLoading: groupsLoading,
+    refetchGroupChats,
+  } = useGroupChatList();
+
   const {
     chats: privateChats,
     isLoading: loadingChats,
@@ -129,18 +133,23 @@ export default function QLURecruiting({
 
         {isGroupsDropdownOpen && (
           <div className={styles.groupsList}>
-            {groups.map((group) => (
-              <div
-                key={group.id}
-                className={styles.groupItem}
-                onClick={() => handleGroupSelect(group)}
-              >
-                <span className={styles.groupIcon}>
-                  <img src={logo} alt="Group Icon" />
-                </span>
-                <span className={styles.groupName}>{group.name}</span>
-              </div>
-            ))}
+            {groupsLoading && <div>Loading groups...</div>}
+
+            {!groupsLoading && groups.length === 0 && <div>No groups yet</div>}
+
+            {!groupsLoading &&
+              groups.map((group) => (
+                <div
+                  key={group.groupId}
+                  className={styles.groupItem}
+                  onClick={() => handleGroupSelect(group.group)}
+                >
+                  <span className={styles.groupIcon}>
+                    <img src={logo} alt="Group Icon" />
+                  </span>
+                  <span className={styles.groupName}>{group.group.name}</span>
+                </div>
+              ))}
           </div>
         )}
 

@@ -36,7 +36,35 @@ export const getProfile = async (
     return;
   }
 };
+export const getAllProfiles = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.userId;
 
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized: userId missing" });
+      return;
+    }
+
+    const profiles = await userService.getAllProfiles(userId);
+    res.status(200).json({
+      success: true,
+      message: "Profiles fetched successfully",
+      data: profiles,
+    });
+    return;
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: "Unexpected error occurred" });
+    }
+    return;
+  }
+};
 export const editProfile = async (
   req: AuthenticatedRequest,
   res: Response,
