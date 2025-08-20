@@ -10,7 +10,30 @@ import { Op } from "sequelize";
 export const getProfile = async (userId: string) => {
   const user = await User.findByPk(userId);
   if (!user) throw new Error("User not found");
-  return user;
+
+  const {
+    id,
+    email,
+    phone_number,
+    display_name,
+    username,
+    status_description,
+    profile_picture,
+  } = user;
+
+  return {
+    success: true,
+    message: "Profile fetched successfully",
+    data: {
+      id,
+      email,
+      phone_number,
+      display_name,
+      username,
+      status_description,
+      profile_picture,
+    },
+  };
 };
 
 export const getAllProfiles = async (currentUserId?: string) => {
@@ -20,7 +43,15 @@ export const getAllProfiles = async (currentUserId?: string) => {
 
   const users = await User.findAll({
     where: whereCondition,
-    attributes: ["id", "username", "display_name", "profile_picture", "email"],
+    attributes: [
+      "id",
+      "username",
+      "display_name",
+      "profile_picture",
+      "email",
+      "status_description",
+      "phone_number",
+    ],
   });
 
   return users;

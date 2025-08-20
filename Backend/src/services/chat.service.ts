@@ -230,18 +230,27 @@ export class ChatService {
 
       const partners = await User.findAll({
         where: { id: partnerIdsArray },
-        attributes: ["id", "display_name", "profile_picture"],
+        attributes: [
+          "id",
+          "display_name",
+          "profile_picture",
+          "username",
+          "email",
+          "status_description",
+          "phone_number",
+        ],
       });
 
       const conversationList = partnerIdsArray.map((partnerId) => {
         const partner = partners.find((p) => p.id === partnerId);
         return {
-          partnerId: partnerId,
-          partner: {
-            id: partner!.id,
-            display_name: partner!.display_name,
-            profile_picture: partner!.profile_picture,
-          },
+          id: partner!.id,
+          display_name: partner!.display_name,
+          username: partner?.username,
+          email: partner?.email,
+          status_description: partner?.status_description,
+          profile_picture: partner!.profile_picture,
+          phone_number: partner?.phone_number,
         };
       });
 
@@ -278,7 +287,6 @@ export class ChatService {
         otherUserId
       );
 
-      
       const cachedMessages = await redisClient.lrange(
         conversationKey,
         0,

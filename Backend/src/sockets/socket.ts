@@ -96,6 +96,7 @@ export class SocketManager {
       this.io
         .to(`group_${data.otherId}`)
         .emit("group_message_received", messageResponse);
+      socket.emit("group_message_sent", messageResponse);
 
       console.log(
         `Group message sent by ${socket.userId} to group ${data.otherId}`

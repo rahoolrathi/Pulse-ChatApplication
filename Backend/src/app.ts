@@ -1,9 +1,8 @@
 import express from "express";
-import authRoutes from "./routes/auth.route";
-import userRoutes from "./routes/user.route";
-import chatRoutes from "./routes/chat.route";
-import cors from "cors";
 
+import cors from "cors";
+import publicRoutes from "./routes/publicRoutes";
+import privateRoutes from "./routes/privateRoutes";
 const app = express();
 
 app.use(
@@ -17,10 +16,8 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("D:/Pulse/Backend/uploads"));
 
-app.use("/api/auth", authRoutes);
-app.use("/api/profile", userRoutes);
-app.use("/api/chats", chatRoutes);
-
+app.use("/api/public", publicRoutes);
+app.use("/api/private", privateRoutes);
 app.get("/health", (req, res) => {
   res.json({
     status: "OK",
