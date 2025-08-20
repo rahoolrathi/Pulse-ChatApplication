@@ -1,6 +1,6 @@
-import { PrivateChat } from "./PrivateChat";
+import User from "./User";
 export interface PrivateChatListResponse {
   success: boolean;
-  conversations: PrivateChat[];
+  conversations: User[];
   totalCount: number;
 }

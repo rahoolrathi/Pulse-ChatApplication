@@ -3,39 +3,24 @@
 import styles from "./style.module.scss";
 import MessageComponent from "../Message";
 import TextEditor from "../TextEditor";
-import { useGroupChatMessages, useSendGroupMessage } from "../../hooks/useChat";
-import {
-  logo,
-  rightfilledarrow,
-  filledmic,
-  filledvideo,
-} from "../../assets/icons";
-interface Members {
-  id: string;
-  profile_picture: string;
-  display_name: string;
-}
-type groupData = {
-  id: string;
-  name: string;
-  members: Members[];
-};
+import hooks from "../../hooks";
+import { GroupChatBox } from "../../types";
+import { logo, rightfilledarrow, hash } from "../../assets/icons";
 
 type GroupChatProps = {
-  groupData: groupData;
+  groupData: GroupChatBox;
 };
 const SERVER_URL = "http://localhost:4000";
 function getAvatarUrl(profilePath?: string) {
-  if (!profilePath) return undefined; // fallback to default logo
-  // Replace backslashes with forward slashes and prepend server URL
+  if (!profilePath) return undefined;
   return `${SERVER_URL}${profilePath.replace(/\\/g, "/")}`;
 }
 export default function GroupChat({ groupData }: GroupChatProps) {
-  const { messages, isLoading, error, refetch } = useGroupChatMessages(
-    groupData.id
+  const { messages, isLoading, error, refetch } = hooks.useGroupChatMessages(
+    groupData.groupId
   );
 
-  const { sendMessage, isConnected, canSend } = useSendGroupMessage();
+  const { sendMessage, isConnected, canSend } = hooks.useSendGroupMessage();
 
   const handleSendMessage = (content: string, messageType: string = "text") => {
     if (!canSend) {
@@ -44,7 +29,7 @@ export default function GroupChat({ groupData }: GroupChatProps) {
     }
 
     try {
-      sendMessage(groupData.id, content, messageType);
+      sendMessage(groupData.groupId, content, messageType);
     } catch (error) {
       console.error("Failed to send message:", error);
     }
@@ -54,16 +39,20 @@ export default function GroupChat({ groupData }: GroupChatProps) {
   const creator = { username: "john_doe", display_name: "John Doe" };
   const group = { created_at: new Date() };
   const membersLoading = false;
+  const uniqueMessages = messages.filter(
+    (message, index, self) =>
+      index === self.findIndex((m) => m.id === message.id)
+  );
 
   return (
     <div className={styles.chatArea}>
       <div className={styles.chatHeader}>
         <div className={styles.chatInfo}>
           <h2 className={styles.chatTitle}>
-            {groupData?.name || "Group Name"}
             <span className={styles.groupPrefix}>
-              <img src={rightfilledarrow} style={{ marginLeft: "8px" }} />
+              <img src={hash} style={{ marginRight: "8px" }} />
             </span>
+            {groupData?.name || "Groups"} Group
           </h2>
         </div>
 
@@ -112,19 +101,28 @@ export default function GroupChat({ groupData }: GroupChatProps) {
             </div>
           )}
         </div>
-
-        <img src={filledmic} alt="mic" className={styles.actionIcon} />
-        <img src={filledvideo} alt="video" className={styles.actionIcon} />
+      </div>
+      <div className={styles.nomessagecontainer}>
+        <h2>
+          <span>
+            <img src={hash} alt="Group icon" />
+          </span>
+          {groupData?.name || "Groups"} Group
+        </h2>
+        <p>
+          @Fahad Jalal created this group on January 3rd. This is the very
+          beginning of the {groupData?.name} Group
+        </p>
       </div>
 
       <div className={styles.messagesList}>
         {isLoading ? (
           <div className={styles.loading}>Loading messages...</div>
         ) : (
-          messages
+          uniqueMessages
             .slice()
             .reverse()
-            .map((message) => (
+            .map((message: any) => (
               <MessageComponent key={message.id} message={message} />
             ))
         )}

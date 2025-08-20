@@ -1,4 +1,5 @@
 // services/chatService.ts
+import { getAuthHeaders } from "../utils/helper";
 import {
   MessagesResponse,
   Message,
@@ -6,76 +7,29 @@ import {
   PrivateChatListResponse,
   groupMessagesResponse,
   groupMessage,
+  GroupResponse,
+  GroupChatBox,
+  GroupChatBoxListResponse,
 } from "../types/index";
-const API_BASE_URL = "http://localhost:4000/api";
-interface User {
-  id: string;
-  username: string;
-  display_name: string;
-  profile_picture: string | null;
-}
-
-interface Userprofiles {
-  id: string;
-  username: string;
-  display_name: string;
-  profile_picture: string | null;
-  email: string;
-}
-interface Members {
-  id: string;
-  profile_picture: string;
-  display_name:string
-}
-interface GroupChatBox {
-  groupId: string;
-  name: string;
-  members: Members[];
-}
-interface GroupChatBoxListResponse {
-  success: boolean;
-  groups: GroupChatBox[];
-  totalCount: number;
-}
 export interface DirectChatResponse {
-  id: string;
-  name: string;
-  avatar_url?: string;
-  type: "direct";
-}
-interface GroupMember {
-  groupId: string;
-  userId: string;
-  role: "admin" | "member";
-  joinedAt: string;
-  user: {
+  success: boolean;
+  message: string;
+  chat?: {
     id: string;
-    display_name: string;
-    profile_picture: string | null;
+    participants: string[];
+    createdAt: string;
+    updatedAt: string;
   };
 }
+import User from "../types/User";
+const API_BASE_URL = "http://localhost:4000/api/private";
 
-export interface GroupResponse {
-  id: string;
-  name: string;
-  description?: string;
-  createdBy: string;
-  createdAt: string;
-  members: GroupMember[];
-}
 class ChatService {
-  private getAuthHeaders(token: string) {
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-  }
-
-  async getPrivateChatList(token: string): Promise<PrivateChat[]> {
+  async getPrivateChatList(token: string): Promise<User[]> {
     try {
       const response = await fetch(`${API_BASE_URL}/chats/privatechatboxlist`, {
         method: "GET",
-        headers: this.getAuthHeaders(token),
+        headers: getAuthHeaders(token),
       });
 
       if (!response.ok) {
@@ -107,7 +61,7 @@ class ChatService {
         `${API_BASE_URL}/chats/privatemessages/${otherUserId}?page=${page}&limit=${limit}`,
         {
           method: "GET",
-          headers: this.getAuthHeaders(token),
+          headers: getAuthHeaders(token),
         }
       );
 
@@ -129,57 +83,6 @@ class ChatService {
     }
   }
 
-  async searchUsers(token: string, key: string): Promise<User[]> {
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/profile/search?key=${encodeURIComponent(key)}`,
-        {
-          method: "GET",
-          headers: this.getAuthHeaders(token),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data: User[] = await response.json();
-      console.log("Search users response:", data);
-
-      return data;
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      throw error;
-    }
-  }
-
-  async getAllUsers(token: string): Promise<User[]> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/profile/allprofile`, {
-        method: "GET",
-        headers: this.getAuthHeaders(token),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.message || "Failed to fetch users");
-      }
-
-      const users: Userprofiles[] = result.data;
-      console.log("users response:", users);
-
-      return users;
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      throw error;
-    }
-  }
-
   async createDirectChat(
     token: string,
     otherUserId: string
@@ -187,7 +90,7 @@ class ChatService {
     try {
       const response = await fetch(`${API_BASE_URL}/chats/directchat`, {
         method: "POST",
-        headers: this.getAuthHeaders(token),
+        headers: getAuthHeaders(token),
         body: JSON.stringify({ otherUserId }),
       });
 
@@ -214,7 +117,7 @@ class ChatService {
     try {
       const response = await fetch(`${API_BASE_URL}/chats/group`, {
         method: "POST",
-        headers: this.getAuthHeaders(token),
+        headers: getAuthHeaders(token),
         body: JSON.stringify({
           name,
           description,
@@ -240,7 +143,7 @@ class ChatService {
     try {
       const response = await fetch(`${API_BASE_URL}/chats/groupchatboxlist`, {
         method: "GET",
-        headers: this.getAuthHeaders(token),
+        headers: getAuthHeaders(token),
       });
 
       if (!response.ok) {
@@ -272,7 +175,7 @@ class ChatService {
         `${API_BASE_URL}/chats/groupmessages/${groupId}?page=${page}&limit=${limit}`,
         {
           method: "GET",
-          headers: this.getAuthHeaders(token),
+          headers: getAuthHeaders(token),
         }
       );
 

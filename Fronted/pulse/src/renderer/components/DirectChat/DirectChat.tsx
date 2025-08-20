@@ -4,16 +4,16 @@ import React from "react";
 import styles from "./style.module.scss";
 import MessageComponent from "../Message";
 import TextEditor from "../TextEditor";
-import { rightfilledarrow, filledmic, filledvideo } from "../../assets/icons";
-import { useChatMessages } from "../../hooks/useChat";
-import { useSendMessage } from "../../hooks/useChat";
-
-interface ChatData {
-  id: string;
-  name: string;
-  avatar_url?: string;
-  type: "group" | "direct";
-}
+import {
+  rightfilledarrow,
+  filledmic,
+  filledvideo,
+  squarelogo,
+  logo,
+} from "../../assets/icons";
+import hooks from "../../hooks";
+import { ChatData } from "../../types";
+import { dbPathToUrl } from "../../utils/helper";
 
 interface DirectChatProps {
   chatData: ChatData | null;
@@ -29,44 +29,58 @@ const DirectChat = ({ chatData }: DirectChatProps) => {
       </div>
     );
   }
-  console.log(chatData.id);
-  const { messages, isLoading } = useChatMessages(chatData.id);
+  console.log(chatData);
+  const { messages, isLoading } = hooks.useChatMessages(chatData.id);
 
   // Send message hook
-  const { sendMessage, canSend } = useSendMessage();
+  const { sendMessage, canSend } = hooks.useSendMessage();
 
   const handleSendMessage = (content: string) => {
     if (canSend && content.trim()) {
       sendMessage(chatData.id, content);
     }
   };
-
+  const profilepic = chatData.avatar_url
+    ? dbPathToUrl(chatData.avatar_url)
+    : squarelogo;
   return (
     <div className={styles.chatArea}>
-      {/* Header */}
-      <div className={styles.chatHeader}>
-        <div className={styles.chatInfo}>
-          <h2 className={styles.chatTitle}>
-            {chatData.name}
-            <img
-              src={rightfilledarrow}
-              alt="arrow"
-              className={styles.arrowIcon}
-            />
-          </h2>
+      {messages.length > 0 && (
+        <div className={`${styles.nomessagecontainer} ${styles.withMessages}`}>
+          <img
+            src={profilepic}
+            className={styles.profilepicture}
+            alt="Profile"
+          />
+          <h1 className={styles.names}>{chatData.name}</h1>
+          <p className={styles.pragprah}>
+            This conversation is between @{chatData.name} and you. Checkout
+            their profile to know more about them.
+          </p>
+          <button className={styles.viewbtn}>View Profile</button>
         </div>
-
-        <img src={filledmic} alt="mic" className={styles.actionIcon} />
-        <img src={filledvideo} alt="video" className={styles.actionIcon} />
-      </div>
+      )}
 
       {/* Messages */}
       <div className={styles.messagesList}>
         {isLoading && <div>Loading messages...</div>}
         {!isLoading && messages.length === 0 && (
-          <div className={styles.noMessages}>No messages yet</div>
+          <div className={styles.nomessagecontainer}>
+            <img
+              src={profilepic}
+              className={styles.profilepicture}
+              alt="Profile"
+            />
+            <h1 className={styles.names}>{chatData.name}</h1>
+            <p className={styles.pragprah}>
+              This conversation is between @{chatData.name} and you. Checkout
+              their profile to know more about them.
+            </p>
+            <button className={styles.viewbtn}>View Profile</button>
+          </div>
         )}
         {!isLoading &&
+          messages.length > 0 &&
           messages
             .slice()
             .reverse()

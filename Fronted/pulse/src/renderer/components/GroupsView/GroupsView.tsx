@@ -3,59 +3,58 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./style.module.scss";
 import { chatService } from "../../services/chatService";
-import { useAllUsers } from "../../hooks/useChat";
-import { useAuth } from "../../context/AuthContext";
-import { useGroupChatList } from "../../hooks/useChat"; // import the hook
+import { GroupChatBox } from "../../types";
+import hooks from "../../hooks";
+import { selectorarrow, modelClose } from "../../assets/icons";
+// // Interfaces
+// export interface GroupMember {
+//   groupId: string;
+//   userId: string;
+//   role: "admin" | "member";
+//   joinedAt: string;
+//   user: {
+//     id: string;
+//     display_name: string;
+//     profile_picture: string | null;
+//   };
+// }
+// export interface GroupResponse {
+//   id: string;
+//   name: string;
+//   description?: string;
+//   createdBy: string;
+//   createdAt: string;
+//   members: GroupMember[];
+// }
 
-// Interfaces
-export interface GroupMember {
-  groupId: string;
-  userId: string;
-  role: "admin" | "member";
-  joinedAt: string;
-  user: {
-    id: string;
-    display_name: string;
-    profile_picture: string | null;
-  };
-}
-export interface GroupResponse {
-  id: string;
-  name: string;
-  description?: string;
-  createdBy: string;
-  createdAt: string;
-  members: GroupMember[];
-}
-
-export interface User {
-  id: string;
-  username: string;
-  display_name: string;
-  profile_picture?: string | null;
-}
-interface Members {
-  id: string;
-  profile_picture: string;
-  display_name: string;
-}
-interface GroupChatBox {
-  groupId: string;
-  name: string;
-  members: Members[];
-}
+// export interface User {
+//   id: string;
+//   username: string;
+//   display_name: string;
+//   profile_picture?: string | null;
+// }
+// interface Members {
+//   id: string;
+//   profile_picture: string;
+//   display_name: string;
+// }
+// interface GroupChatBox {
+//   groupId: string;
+//   name: string;
+//   members: Members[];
+// }
 interface GroupsViewProps {
   onGroupSelect: (group: GroupChatBox) => void;
 }
 
 const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
-  const { token } = useAuth();
-  const { data: users = [], isLoading: usersLoading } = useAllUsers();
+  const { token } = hooks.useAuth();
+  const { data: users = [], isLoading: usersLoading } = hooks.useAllUsers();
   const {
     data: groups = [],
     isLoading: groupsLoading,
     refetchGroupChats,
-  } = useGroupChatList();
+  } = hooks.useGroupChatList();
 
   const [showModal, setShowModal] = useState(false);
   const [groupName, setGroupName] = useState("");
@@ -159,7 +158,7 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
             <p>No groups found. Create your first group!</p>
           </div>
         ) : (
-          groups.map((group) => (
+          groups.map((group: any) => (
             <div
               key={group.groupId}
               className={styles.groupCard}
@@ -178,10 +177,13 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
               <h3>Create New Group</h3>
-              <button
-                className={styles.closeButton}
-                onClick={closeModal}
-              ></button>
+              <button className={styles.closeButton} onClick={closeModal}>
+                <img
+                  src={modelClose}
+                  alt="Close"
+                  className={styles.closeButton}
+                />
+              </button>
             </div>
 
             <hr className={styles.divider} />
@@ -212,6 +214,11 @@ const GroupsView: React.FC<GroupsViewProps> = ({ onGroupSelect }) => {
                             .join(", ")
                         : "Select members"}
                     </div>
+                    <img
+                      src={selectorarrow} // from your imported assets
+                      alt="arrow"
+                      className={styles.arrowIcon}
+                    />
                   </div>
 
                   {showUserDropdown && (

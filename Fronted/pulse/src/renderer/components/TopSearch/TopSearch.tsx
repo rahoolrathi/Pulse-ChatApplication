@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
+import { userservice } from "../../services/userService";
 import { chatService } from "../../services/chatService";
 import "./TopSearch.scss"; // We'll create this interface
 
@@ -47,7 +48,7 @@ const TopSearch: React.FC<TopSearchProps> = ({
 
       setLoading(true);
       try {
-        const users = await chatService.searchUsers(token, searchTerm);
+        const users = await userservice.searchUser(token, searchTerm);
         setFilteredUsers(users);
         setShowDropdown(true);
       } catch (error) {
@@ -75,7 +76,7 @@ const TopSearch: React.FC<TopSearchProps> = ({
 
       // Call backend to create/open chat
       const chat = await chatService.createDirectChat(token, user.id);
-      if (refreshChats) refreshChats();
+      // if (refreshChats) refreshChats();
       if (onViewChange) {
         onViewChange("directChat", {
           id: chat.id,

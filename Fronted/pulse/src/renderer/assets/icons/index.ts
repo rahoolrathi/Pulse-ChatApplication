@@ -37,6 +37,9 @@ import teleft from "./teleft.svg";
 import chat from "./chat.svg";
 import filledvideo from "./filledvideo.svg";
 import filledmic from "./filledmic.svg";
+import squarelogo from "./squarepng.svg";
+import selectorarrow from "./selectorarrow.svg";
+import hash from "./hash.svg";
 export {
   menSvg,
   menHoverSvg,
@@ -77,4 +80,7 @@ export {
   chat,
   filledvideo,
   filledmic,
+  squarelogo,
+  selectorarrow,
+  hash,
 };

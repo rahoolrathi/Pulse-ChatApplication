@@ -46,31 +46,6 @@
     width: 100%;
     margin-top: 64px;
 
-    .loading {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 2rem;
-      color: #6c757d;
-    }
-
-    .error {
-      grid-column: 1 / -1;
-      color: #dc3545;
-      padding: 2rem;
-      text-align: center;
-    }
-
-    .emptyState {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 2rem;
-      color: #6c757d;
-
-      p {
-        margin: 0;
-      }
-    }
-
     .groupCard {
       height: 60px;
       background: #f2f9ff;
@@ -80,19 +55,19 @@
       align-items: center;
       gap: 16px;
       cursor: pointer;
-      transition: all 0.2s ease;
       border: 1px solid #c7eaff;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Optional: keep the default shadow */
 
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(36, 94, 128, 0.15);
-        border-color: #b7ddf2;
+      /* REMOVE this hover block entirely */
+      // &:hover {
+      //   transform: translateY(-2px);
+      //   box-shadow: 0 4px 12px rgba(36, 94, 128, 0.15);
+      //   border-color: #b7ddf2;
 
-        .arrow {
-          transform: translateX(4px);
-        }
-      }
+      //   .arrow {
+      //     transform: translateX(4px);
+      //   }
+      // }
 
       .groupIcon {
         width: 48px;
@@ -227,6 +202,12 @@
             font-size: 16px;
             color: #808080;
 
+            &:focus {
+              outline: none;
+              box-shadow: none;
+              border-color: #124766; // keeps the same border color
+            }
+
             &:disabled {
               opacity: 0.6;
               cursor: not-allowed;
@@ -275,6 +256,12 @@
               text-overflow: ellipsis;
               flex: 1;
             }
+            .arrowIcon {
+              width: 20px;
+              height: 20px;
+              margin-left: 8px;
+              transition: transform 0.2s ease;
+            }
 
             .arrow {
               margin-left: 8px;
@@ -300,6 +287,14 @@
               height: auto;
               border-radius: 0px;
               border-top-left-radius: 6px;
+              // Remove shadows & outlines
+              box-shadow: none !important;
+              outline: none !important;
+
+              &:focus {
+                box-shadow: none !important;
+                outline: none !important;
+              }
             }
 
             .loadingUsers {

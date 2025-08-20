@@ -1,27 +1,29 @@
-'use client';
+"use client";
 
-import styles from './style.module.scss';
-import { modelClose } from '../../../assets/icons';
-import { Button } from '../../ui';
-import clsx from 'clsx';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthContext'; // Adjust path as needed
-import ChatShell from '../../ChatShell';
+import styles from "./style.module.scss";
+import { modelClose } from "../../../assets/icons";
+import { Button } from "../../ui";
+import clsx from "clsx";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import hooks from "../../../hooks";
+import ChatShell from "../../ChatShell";
 
 interface LoginModalProps {
   onClose: () => void;
   onSwitchToSignup: () => void;
 }
 
-export default function LoginModal({ onClose, onSwitchToSignup }: LoginModalProps) {
-  const { login, isLoading } = useAuth();
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  const [identifierError, setIdentifierError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+export default function LoginModal({
+  onClose,
+  onSwitchToSignup,
+}: LoginModalProps) {
+  const { login, isLoading } = hooks.useAuth();
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [identifierError, setIdentifierError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [generalError, setGeneralError] = useState('');
   const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
@@ -32,44 +34,44 @@ export default function LoginModal({ onClose, onSwitchToSignup }: LoginModalProp
   const handleIdentifierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setIdentifier(value);
-    setIdentifierError('');
-    setGeneralError('');
+    setIdentifierError("");
+    setPasswordError("");
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
-    setPasswordError('');
-    setGeneralError('');
+    setPasswordError("");
+    setIdentifierError("");
   };
 
   const handleLogin = async () => {
     let hasError = false;
-    setGeneralError('');
 
     if (!identifier) {
-      setIdentifierError('Email or username is required');
+      setIdentifierError("Email or username is required");
       hasError = true;
     }
 
     if (!password) {
-      setPasswordError('Password is required');
+      setPasswordError("Password is required");
       hasError = true;
     }
 
     if (!hasError) {
       try {
         await login(identifier, password);
-        navigate('/chat');
+        navigate("/chat");
       } catch (error: any) {
-        setGeneralError(error.message || 'Login failed. Please try again.');
+        setIdentifierError("Please enter a valid work email.");
+        // Show validation error instead of general error
+        setPasswordError("Please enter correct password.");
       }
     }
   };
 
   const handleForgotPassword = () => {
- 
-    console.log('Forgot password clicked');
+    console.log("Forgot password clicked");
   };
 
   return (
@@ -81,7 +83,6 @@ export default function LoginModal({ onClose, onSwitchToSignup }: LoginModalProp
 
         <h1 className={styles.title}>Login</h1>
 
-      
         <div className={styles.inputGroup}>
           <input
             type="text"
@@ -91,37 +92,39 @@ export default function LoginModal({ onClose, onSwitchToSignup }: LoginModalProp
             className={clsx(styles.input, identifierError && styles.inputError)}
             disabled={isLoading}
           />
-          {identifierError && <div className={styles.errorMessage}>{identifierError}</div>}
+          {identifierError && (
+            <div className={styles.errorMessage}>{identifierError}</div>
+          )}
         </div>
 
         <div className={styles.inputGroup}>
           <input
-            type={showPassword ? 'text' : 'password'}
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             value={password}
             onChange={handlePasswordChange}
             className={clsx(styles.input, passwordError && styles.inputError)}
             disabled={isLoading}
           />
-          {passwordError && <div className={styles.errorMessage}>{passwordError}</div>}
+          {passwordError && (
+            <div className={styles.errorMessage}>{passwordError}</div>
+          )}
         </div>
 
-        <Button className={styles.forgotPassword} onClick={handleForgotPassword}>
+        <Button
+          className={styles.forgotPassword}
+          onClick={handleForgotPassword}
+        >
           Forgot password
         </Button>
-  {generalError && (
-          <div className={styles.errorMessage} style={{ marginBottom: '1rem',  color:'red'}}>
-            {generalError}
-          </div>
-        )}
 
-        <Button 
-          variant="filled" 
-          className={styles.loginButton} 
+        <Button
+          variant="filled"
+          className={styles.loginButton}
           onClick={handleLogin}
           disabled={isLoading}
         >
-          {isLoading ? 'Logging in...' : 'Login'}
+          {isLoading ? "Logging in..." : "Login"}
         </Button>
 
         <div className={styles.divider}>
@@ -130,7 +133,11 @@ export default function LoginModal({ onClose, onSwitchToSignup }: LoginModalProp
           <div className={styles.line}></div>
         </div>
 
-        <Button variant="outlined" className={styles.createAccountButton} onClick={onSwitchToSignup}>
+        <Button
+          variant="outlined"
+          className={styles.createAccountButton}
+          onClick={onSwitchToSignup}
+        >
           Create a new account
         </Button>
       </div>

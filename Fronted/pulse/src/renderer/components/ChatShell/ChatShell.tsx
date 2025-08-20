@@ -9,19 +9,7 @@ import TopSearch from "../TopSearch";
 import Splash from "../Splash";
 import GroupsView from "../GroupsView";
 import GroupChat from "../GroupChat";
-
-interface Members {
-  id: string;
-  profile_picture: string;
-  display_name: string;
-}
-interface ChatData {
-  id: string;
-  name: string;
-  avatar_url?: string;
-  type: "group" | "direct";
-  members?: Members[];
-}
+import { ChatData } from "../../types";
 
 type ViewType = "splash" | "groups" | "directChat" | "groupChat";
 
@@ -56,7 +44,7 @@ export default function ChatShell() {
         return (
           <GroupChat
             groupData={{
-              id: selectedChat.id,
+              groupId: selectedChat.id,
               name: selectedChat.name,
               members: selectedChat.members,
             }}

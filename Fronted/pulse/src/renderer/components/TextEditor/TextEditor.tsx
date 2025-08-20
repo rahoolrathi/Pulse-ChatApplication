@@ -18,7 +18,7 @@ import {
   teleft,
 } from "../../assets/icons"; // adjust paths as needed
 import styles from "./style.module.scss";
-import { useSocket } from "../../context/SocketContext";
+import hooks from "../../hooks";
 
 interface TextEditorProps {
   textTo: string;
@@ -35,7 +35,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo, onSendMessage }) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { isConnected } = useSocket();
+  const { isConnected } = hooks.useSocket();
 
   // --- Auto-resize & input change ---
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -223,6 +223,9 @@ const TextEditor: React.FC<TextEditorProps> = ({ textTo, onSendMessage }) => {
             />
           </div>
         </div>
+      )}
+      {!isConnected && (
+        <div className={styles.connectionToast}>Socket disconnected</div>
       )}
     </div>
   );

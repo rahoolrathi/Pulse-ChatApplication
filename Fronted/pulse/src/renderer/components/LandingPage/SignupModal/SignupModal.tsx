@@ -1,44 +1,53 @@
-'use client';
+"use client";
 
-import styles from './style.module.scss';
-import { modelClose } from '../../../assets/icons';
-import { Button } from '../../ui';
-import { useState } from 'react';
-import clsx from 'clsx';
-import { useAuth } from '../../../context/AuthContext'; // Adjust path as needed
+import styles from "./style.module.scss";
+import { modelClose } from "../../../assets/icons";
+import { Button } from "../../ui";
+import { useState } from "react";
+import clsx from "clsx";
+import hooks from "../../../hooks"; // Adjust path as needed
 
 interface SignupModalProps {
   onClose: () => void;
   onSwitchToLogin: () => void;
 }
 
-export default function SignupModal({ onClose, onSwitchToLogin }: SignupModalProps) {
-  const { signup, isLoading } = useAuth();
-  const [email, setEmail] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [usernameError, setUsernameError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+export default function SignupModal({
+  onClose,
+  onSwitchToLogin,
+}: SignupModalProps) {
+  const { signup, isLoading } = hooks.useAuth();
+  const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [generalError, setGeneralError] = useState('');
+  const [generalError, setGeneralError] = useState("");
 
-  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validateUsername = (username: string) => /^[a-zA-Z0-9_]{3,}$/.test(username);
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateUsername = (username: string) =>
+    /^[a-zA-Z0-9_]{3,}$/.test(username);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
-    setEmailError(value && !validateEmail(value) ? 'Please enter a valid email address.' : '');
-    setGeneralError('');
+    setEmailError(
+      value && !validateEmail(value)
+        ? "Please enter a valid email address."
+        : ""
+    );
+    setGeneralError("");
   };
 
   const getPasswordStrength = (password: string) => {
-    if (password.length < 6) return { strength: '', color: '' };
-    if (password.length < 8) return { strength: 'Weak', color: 'weakBar' };
-    if (password.length < 12) return { strength: 'Medium', color: 'mediumBar' };
-    return { strength: 'Strong', color: 'strongBar' };
+    if (password.length < 6) return { strength: "", color: "" };
+    if (password.length < 8) return { strength: "Weak", color: "weakBar" };
+    if (password.length < 12) return { strength: "Medium", color: "mediumBar" };
+    return { strength: "Strong", color: "strongBar" };
   };
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,35 +55,35 @@ export default function SignupModal({ onClose, onSwitchToLogin }: SignupModalPro
     setUsername(value);
     setUsernameError(
       value && !validateUsername(value)
-        ? 'Username unavailable. Try using numbers, underscores etc.'
-        : ''
+        ? "Username unavailable. Try using numbers, underscores etc."
+        : ""
     );
-    setGeneralError('');
+    setGeneralError("");
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
-    setPasswordError('');
-    setGeneralError('');
+    setPasswordError("");
+    setGeneralError("");
   };
 
   const handleSignup = async () => {
     let hasError = false;
-    setGeneralError('');
+    setGeneralError("");
 
     if (!email || !validateEmail(email)) {
-      setEmailError('Please enter a valid email address.');
+      setEmailError("Please enter a valid email address.");
       hasError = true;
     }
 
     if (!username || !validateUsername(username)) {
-      setUsernameError('Username unavailable.');
+      setUsernameError("Username unavailable.");
       hasError = true;
     }
 
     if (!password || password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+      setPasswordError("Password must be at least 6 characters");
       hasError = true;
     }
 
@@ -83,7 +92,7 @@ export default function SignupModal({ onClose, onSwitchToLogin }: SignupModalPro
         await signup(email, displayName, username, password);
         setShowConfirmation(true);
       } catch (error: any) {
-        setGeneralError(error.message || 'Signup failed. Please try again.');
+        setGeneralError(error.message || "Signup failed. Please try again.");
       }
     }
   };
@@ -120,7 +129,7 @@ export default function SignupModal({ onClose, onSwitchToLogin }: SignupModalPro
         <h1 className={styles.title}>Signup</h1>
 
         {generalError && (
-          <div className={styles.errorMessage} style={{ marginBottom: '1rem' }}>
+          <div className={styles.errorMessage} style={{ marginBottom: "1rem" }}>
             {generalError}
           </div>
         )}
@@ -134,7 +143,9 @@ export default function SignupModal({ onClose, onSwitchToLogin }: SignupModalPro
             onChange={handleEmailChange}
             disabled={isLoading}
           />
-          {emailError && <div className={styles.errorMessage}>{emailError}</div>}
+          {emailError && (
+            <div className={styles.errorMessage}>{emailError}</div>
+          )}
         </div>
 
         <div className={styles.inputGroup}>
@@ -157,7 +168,9 @@ export default function SignupModal({ onClose, onSwitchToLogin }: SignupModalPro
             value={username}
             disabled={isLoading}
           />
-          {usernameError && <div className={styles.errorMessage}>{usernameError}</div>}
+          {usernameError && (
+            <div className={styles.errorMessage}>{usernameError}</div>
+          )}
         </div>
 
         <div className={styles.inputGroup}>
@@ -169,7 +182,9 @@ export default function SignupModal({ onClose, onSwitchToLogin }: SignupModalPro
             value={password}
             disabled={isLoading}
           />
-          {passwordError && <div className={styles.errorMessage}>{passwordError}</div>}
+          {passwordError && (
+            <div className={styles.errorMessage}>{passwordError}</div>
+          )}
         </div>
 
         {password && passwordStrengthInfo.strength && (
@@ -179,12 +194,18 @@ export default function SignupModal({ onClose, onSwitchToLogin }: SignupModalPro
                 const strength = passwordStrengthInfo.strength;
                 const barClass =
                   (index === 0 && strength) ||
-                  (index === 1 && (strength === 'Medium' || strength === 'Strong')) ||
-                  (index === 2 && strength === 'Strong')
+                  (index === 1 &&
+                    (strength === "Medium" || strength === "Strong")) ||
+                  (index === 2 && strength === "Strong")
                     ? styles[passwordStrengthInfo.color as keyof typeof styles]
                     : styles.grayBar;
 
-                return <div key={index} className={clsx(styles.strengthBar, barClass)} />;
+                return (
+                  <div
+                    key={index}
+                    className={clsx(styles.strengthBar, barClass)}
+                  />
+                );
               })}
             </div>
             <span className={styles.strengthText}>
@@ -193,13 +214,13 @@ export default function SignupModal({ onClose, onSwitchToLogin }: SignupModalPro
           </div>
         )}
 
-        <Button 
-          variant="filled" 
-          className={styles.signupButton} 
+        <Button
+          variant="filled"
+          className={styles.signupButton}
           onClick={handleSignup}
           disabled={isLoading}
         >
-          {isLoading ? 'Creating account...' : 'Signup'}
+          {isLoading ? "Creating account..." : "Signup"}
         </Button>
 
         <div className={styles.divider}>
@@ -208,7 +229,11 @@ export default function SignupModal({ onClose, onSwitchToLogin }: SignupModalPro
           <div className={styles.line}></div>
         </div>
 
-        <Button variant="outlined" className={styles.loginRedirectButton} onClick={onSwitchToLogin}>
+        <Button
+          variant="outlined"
+          className={styles.loginRedirectButton}
+          onClick={onSwitchToLogin}
+        >
           Already have an account? Login
         </Button>
       </div>

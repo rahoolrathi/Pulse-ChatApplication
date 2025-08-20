@@ -4,31 +4,18 @@ import React, { useState, useEffect } from "react";
 import styles from "./style.module.scss";
 import { Button } from "../ui";
 import { modelClose } from "../../assets/icons";
+import User from "../../types/User";
+import { userservice } from "../../services/userService";
+import { dbPathToUrl } from "../../utils/helper";
+import { squarelogo } from "../../assets/icons";
+import { useAuth } from "../../hooks/useAuth";
 
 type ProfileModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  user: User | null;
-  onProfileUpdate: (updatedUser: User) => void;
 };
 
-type User = {
-  display_name: string;
-  username: string;
-  email: string;
-  status_description: string;
-  phone_number: string;
-  avatar_url?: string;
-};
-
-const API_BASE = "http://localhost:4000";
-
-const ProfileModal: React.FC<ProfileModalProps> = ({
-  isOpen,
-  onClose,
-  user,
-  onProfileUpdate,
-}) => {
+const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [formData, setFormData] = useState<User | null>(null);
@@ -36,11 +23,14 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
-  // Update form data when user prop changes
+  const { refreshProfile, user } = useAuth();
+
   useEffect(() => {
     if (user) {
       setFormData(user);
-      setPreviewUrl(user.avatar_url || "");
+      setPreviewUrl(
+        user.profile_picture ? dbPathToUrl(user.profile_picture) : ""
+      );
     }
   }, [user]);
 
@@ -58,8 +48,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       setAvatarFile(file);
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
@@ -78,7 +67,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
       const form = new FormData();
 
       if (isProfile) {
-        // Profile fields
         if (formData.display_name?.trim()) {
           form.append("display_name", formData.display_name);
         }
@@ -92,7 +80,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
           form.append("profile_picture", avatarFile);
         }
       } else {
-        // Contact fields
         if (formData.phone_number?.trim()) {
           form.append("phone_number", formData.phone_number);
         }
@@ -101,45 +88,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         }
       }
 
-      console.log("FormData entries:");
-      for (let [key, value] of form.entries()) {
-        console.log(key, value);
-      }
+      await userservice.editProfile(form, token);
 
-      const res = await fetch(`http://localhost:4000/api/profile/edit`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: form,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        console.error("Server response:", data);
-        throw new Error(data.error || "Failed to update profile");
-      }
-
-      const avatarUrl = data.data.profile_picture
-        ? `${API_BASE}/${data.data.profile_picture.replace(/\\/g, "/").replace(/^\/+/, "")}`
-        : "";
-
-      const updatedUser: User = {
-        display_name: data.data.display_name || "",
-        username: data.data.username || "",
-        email: data.data.email || "",
-        phone_number: data.data.phone_number || "",
-        status_description: data.data.status_description,
-        avatar_url: avatarUrl,
-      };
-
-      // Update both local state and parent component
-      setFormData(updatedUser);
-      onProfileUpdate(updatedUser); // This updates the sidebar
+      // Refresh the global auth context
+      await refreshProfile();
 
       if (isProfile) {
-        setPreviewUrl(avatarUrl);
         setAvatarFile(null);
         setIsEditing(false);
       } else {
@@ -181,16 +135,14 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             <div className={styles.line}></div>
 
             <div className={styles.profileImage}>
-              {user.avatar_url ? (
+              {user.profile_picture ? (
                 <img
-                  src={user.avatar_url}
+                  src={dbPathToUrl(user.profile_picture)}
                   alt="Profile"
-                  width={0}
-                  height={0}
                   sizes="100vw"
                 />
               ) : (
-                <div className={styles.placeholderImage}></div>
+                <img src={squarelogo} alt="Default logo" sizes="100vw" />
               )}
             </div>
 
@@ -302,12 +254,15 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                         src={previewUrl}
                         alt="Profile preview"
                         className={styles.photoPreview}
-                        width={0}
-                        height={0}
                         sizes="100vw"
                       />
                     ) : (
-                      <div className={styles.photoPlaceholder}></div>
+                      <img
+                        src={squarelogo}
+                        alt="Default logo"
+                        className={styles.photoPreview}
+                        sizes="100vw"
+                      />
                     )}
                   </div>
 

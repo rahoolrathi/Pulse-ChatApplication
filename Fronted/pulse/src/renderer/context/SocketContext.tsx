@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "../lib/queryClient";
 import { Message, PrivateChat } from "../types";
@@ -35,7 +35,6 @@ export interface GroupChat {
   updatedAt: string;
   lastMessage?: GroupMessage;
   memberCount?: number;
-  // Add any other group properties you need
 }
 
 interface sendMessageData {
@@ -59,15 +58,28 @@ interface SocketContextType {
   sendGroupMessage: (messageData: sendGroupMessageData) => void;
 }
 
-const SocketContext = createContext<SocketContextType | undefined>(undefined);
+export const SocketContext = createContext<SocketContextType | undefined>(
+  undefined
+);
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const { token, user } = useAuth();
+  const { token, user, isLoading } = useAuth();
+  console.log(token);
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    if (isLoading || !token || !user) {
+      console.log("Socket effect - waiting for auth:", {
+        token: !!token,
+        user: !!user,
+        isLoading,
+      });
+      return;
+    }
+    console.log("oso", user);
+    console.log("Creating socket connection for user:", user.id);
     if (token && user) {
       const newSocket = io("http://localhost:4000", {
         auth: {
@@ -90,11 +102,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       newSocket.on("private_message_received", (message: Message) => {
         console.log("Private message received:", message);
 
+        // Update messages cache
         queryClient.setQueryData(
           [...queryKeys.privateMessages(message.senderId), 1],
           (oldMessages: Message[] = []) => [...oldMessages, message]
         );
 
+        // Update chat list cache
         queryClient.setQueryData(
           queryKeys.privateChatList,
           (oldChats: PrivateChat[] = []) =>
@@ -109,6 +123,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
               return chat;
             })
         );
+
+        // Invalidate related queries to ensure fresh data
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.privateChatList,
+        });
       });
 
       newSocket.on("message_sent", (message: Message) => {
@@ -123,6 +142,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
                 : msg
             )
         );
+
+        // Invalidate chat list to update last message timestamp
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.privateChatList,
+        });
       });
 
       // Group message handlers
@@ -150,6 +174,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
               return chat;
             })
         );
+
+        // Invalidate related group queries
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.groupChatList,
+        });
       });
 
       newSocket.on("group_message_sent", (message: GroupMessage) => {
@@ -165,6 +194,24 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
                 : msg
             )
         );
+
+        // Invalidate group chat list
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.groupChatList,
+        });
+      });
+
+      // Handle connection errors and reconnection
+      newSocket.on("connect_error", (error: any) => {
+        console.error("Connection error:", error);
+
+        // On reconnection, invalidate all cached data to ensure consistency
+        setTimeout(() => {
+          if (newSocket.connected) {
+            console.log("Reconnected - invalidating all queries");
+            queryClient.invalidateQueries();
+          }
+        }, 1000);
       });
 
       newSocket.on("error", (error: any) => {
@@ -177,7 +224,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         newSocket.disconnect();
       };
     }
-  }, [token, user, queryClient]);
+  }, [token, user, queryClient, isLoading]);
 
   const sendPrivateMessage = (messageData: sendMessageData) => {
     if (socket && isConnected && user) {
@@ -197,12 +244,34 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         },
       };
 
+      // Optimistically update cache
       queryClient.setQueryData(
         [...queryKeys.privateMessages(messageData.otherId), 1],
         (oldMessages: Message[] = []) => [...oldMessages, tempMessage]
       );
 
+      // Send the message
       socket.emit("send_private_message", messageData);
+
+      // Optionally invalidate after a short delay if no confirmation received
+      setTimeout(() => {
+        const currentMessages = queryClient.getQueryData([
+          ...queryKeys.privateMessages(messageData.otherId),
+          1,
+        ]) as Message[];
+
+        const stillTemp = currentMessages?.some(
+          (msg) =>
+            msg.id.startsWith("temp-") && msg.content === messageData.content
+        );
+
+        if (stillTemp) {
+          console.log("Message confirmation not received, invalidating cache");
+          queryClient.invalidateQueries({
+            queryKey: [...queryKeys.privateMessages(messageData.otherId)],
+          });
+        }
+      }, 10000); // 10 second timeout
     }
   };
 
@@ -223,20 +292,45 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           display_name: user.display_name,
           profile_picture: undefined,
         },
-        group: undefined, // Will be filled by server response
+        group: undefined,
       };
 
+      // Optimistically update cache
       queryClient.setQueryData(
         [...queryKeys.groupMessages(messageData.groupId), 1],
         (oldMessages: GroupMessage[] = []) => [...oldMessages, tempMessage]
       );
 
+      // Send the message
       socket.emit("send_group_message", {
         content: messageData.content,
-        otherId: messageData.groupId, // Backend expects 'otherId' for group ID
+        otherId: messageData.groupId,
         messageType: messageData.messageType || "text",
         attachmentUrl: messageData.attachmentUrl,
       });
+
+      // Timeout fallback for group messages
+      setTimeout(() => {
+        const currentMessages = queryClient.getQueryData([
+          ...queryKeys.groupMessages(messageData.groupId),
+          1,
+        ]) as GroupMessage[];
+
+        const stillTemp = currentMessages?.some(
+          (msg) =>
+            msg.id.startsWith("temp-group-") &&
+            msg.content === messageData.content
+        );
+
+        if (stillTemp) {
+          console.log(
+            "Group message confirmation not received, invalidating cache"
+          );
+          queryClient.invalidateQueries({
+            queryKey: [...queryKeys.groupMessages(messageData.groupId)],
+          });
+        }
+      }, 10000);
     }
   };
 
@@ -252,12 +346,4 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       {children}
     </SocketContext.Provider>
   );
-}
-
-export function useSocket() {
-  const context = useContext(SocketContext);
-  if (context === undefined) {
-    throw new Error("useSocket must be used within a SocketProvider");
-  }
-  return context;
 }

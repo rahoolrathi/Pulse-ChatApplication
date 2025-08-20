@@ -45,118 +45,83 @@
     }
   }
 
-  .chatHeader {
-    background: #e6eef2;
-    border-bottom: 1px solid #b7ddf2;
-    display: flex;
-    align-items: center;
-    padding: 20px 32px;
-    gap: 16px;
-    width: 1096;
-    height: 59px;
+  ///////////////
+  ///
+  ///
 
-    .backButton {
-      width: 32px;
-      height: 32px;
+  .nomessagecontainer {
+    background: #e6eef2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 16px;
+    width: 100%;
+    min-height: 250px;
+
+    .profilepicture {
+      width: 150px;
+      height: 150px;
       border-radius: 4px;
-      background: #e0f4ff;
+      object-fit: cover;
+    }
+
+    .names {
+      font-family: "Roboto", sans-serif;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 23px;
+      color: #06334d;
+      margin-top: 12px;
+    }
+
+    .pragprah {
+      max-width: 786px;
+      text-align: left;
+      font-family: "Roboto", sans-serif;
+      font-size: 14px;
+      line-height: 20px;
+      color: #333;
+      margin: 0 0 12px 0;
+    }
+
+    .viewbtn {
       display: flex;
-      align-items: center;
       justify-content: center;
-      color: #245e80;
-      transition: all 0.2s ease;
-      border: none;
+      align-items: center;
+      padding: 8px 16px;
+      gap: 10px;
+      width: 120px;
+      height: 36px;
+      border: 1px solid #124766;
+      border-radius: 4px;
+      background: transparent;
+      font-family: "Roboto", sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      color: #124766;
       cursor: pointer;
+      transition: all 0.2s ease;
 
       &:hover {
-        background: #c7eaff;
+        background: #124766;
+        color: #fff;
+      }
+
+      &:active {
+        transform: scale(0.97);
       }
     }
 
-    .chatInfo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-
-      .chatAvatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: url("/api/placeholder/40/40") center/cover;
-        flex-shrink: 0;
-      }
-
-      .chatTitle {
-        font-size: 20px;
-        font-weight: 700;
-        color: #06334d;
-        margin: 0px 0px 4px 0px;
-
-        .groupPrefix {
-          color: #245e80;
-        }
-        .arrowIcon {
-          width: 7px;
-          height: 10px;
-          border: 1.5px;
-          color: #06334d;
-          margin: 0px 4px 0px 4px;
-          size: 20;
-        }
-      }
-      .headerActions {
-        display: flex;
-        align-items: center;
-        gap: 64px;
-
-        .actionIcon {
-          width: 40px;
-          height: 40px;
-          top: 10px;
-          border-radius: 8px;
-          padding: 8px;
-        }
-      }
-
-      .groupDescription,
-      .directDescription {
-        font-size: 12px;
-        color: #5691b2;
-        margin: 0;
-        line-height: 1.3;
-      }
-      span {
-        color: #245e80;
-        font-weight: 600;
-      }
-    }
-
-    .members {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      .memberAvatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: url("/api/placeholder/32/32") center/cover;
-        border: 2px solid #f2f9ff;
-        margin-left: -8px;
-
-        &:first-child {
-          margin-left: 0;
-        }
-      }
-
-      .memberCount {
-        font-size: 14px;
-        color: #596368;
-        margin-left: 8px;
-      }
+    // 👇 only when messages exist
+    &.withMessages {
+      margin-left: 40px;
+      margin-top: 50px;
     }
   }
+
+  //////////////
 
   .messagesList {
     flex: 1;
@@ -166,18 +131,20 @@
     flex-direction: column-reverse;
     gap: 16px;
 
+    // when nomessagecontainer exists on top
+    &.withHeader {
+      margin-top: 271px;
+    }
+
     &::-webkit-scrollbar {
       width: 6px;
     }
-
     &::-webkit-scrollbar-track {
       background: transparent;
     }
-
     &::-webkit-scrollbar-thumb {
       background: #b7ddf2;
       border-radius: 3px;
-
       &:hover {
         background: #9ec5db;
       }

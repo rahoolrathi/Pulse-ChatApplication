@@ -65,7 +65,7 @@
     }
 
     .title {
-      font-family: 'Righteous', sans-serif;
+      font-family: "Righteous", sans-serif;
       font-style: normal;
       font-weight: 400;
       font-size: 45px;
@@ -78,7 +78,19 @@
 
     .inputGroup {
       position: relative;
-      margin-bottom: 20px;
+      margin-top: 20px; // Reduced gap between input fields
+
+      &:has(.errorMessage) {
+        // margin-bottom: 28px; // Small additional space for error message
+      }
+
+      &:has(.passwordStrength) {
+        margin-bottom: 36px; // Additional space for password strength indicator
+      }
+
+      &:last-of-type {
+        margin-bottom: 0; // Remove bottom margin from last input group
+      }
 
       .input {
         box-sizing: border-box;
@@ -87,13 +99,13 @@
         align-items: center;
         padding: 8px 16px;
         gap: 10px;
-        width: 328px;
+        width: 100%; // Changed from 328px to 100% to match container width
         height: 48px;
         border: 1px solid #8c8c8c;
         border-radius: 8px;
         background: transparent;
 
-        font-family: 'Roboto', sans-serif;
+        font-family: "Roboto", sans-serif;
         font-style: normal;
         font-weight: 400;
         font-size: 16px;
@@ -116,25 +128,25 @@
 
       .errorMessage {
         position: absolute;
-        top: 48px;
+        top: 100%;
         left: 0;
-        font-family: 'Roboto', sans-serif;
+        font-family: "Roboto", sans-serif;
         font-style: normal;
         font-weight: 400;
         font-size: 12px;
         line-height: 14px;
+        margin-top: 4px;
         color: #f03030;
-        margin-bottom: 8px;
       }
 
       .passwordStrength {
         position: absolute;
-        top: 56px;
+        top: 60px; // Increased to accommodate error message space
         left: 0;
         display: flex;
         align-items: center;
         gap: 8px;
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         font-style: normal;
         font-weight: 300;
         font-size: 12px;
@@ -181,9 +193,10 @@
       background: transparent;
       cursor: pointer;
       margin-left: auto;
-      margin-bottom: 20px;
+      margin-top: 8px; // 12px gap between password field and forgot password
+      margin-bottom: 20px; // 12px gap between forgot password and login button
 
-      font-family: 'Roboto', sans-serif;
+      font-family: "Roboto", sans-serif;
       font-style: normal;
       font-weight: 400;
       font-size: 12px;
@@ -209,9 +222,9 @@
       border-radius: 8px;
       border: none;
       cursor: pointer;
-      margin-bottom: 30px;
+      margin-bottom: 32px; // 32px gap between login button and divider
 
-      font-family: 'Inter', sans-serif;
+      font-family: "Inter", sans-serif;
       font-style: normal;
       font-weight: 700;
       font-size: 16px;
@@ -225,22 +238,21 @@
 
     .divider {
       position: relative;
-      width: 100%;
+      width: 100%; // Same width as inputs/buttons
       height: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 30px;
+      margin-bottom: 32px; // 32px gap between divider and create account button
 
       .line {
-        width: 145px;
+        flex: 1; // Changed from fixed width to flex: 1 to fill available space
         height: 1px;
         background: #a3a3a3;
       }
 
       .orText {
-        position: absolute;
-        font-family: 'Roboto', sans-serif;
+        font-family: "Roboto", sans-serif;
         font-style: normal;
         font-weight: 600;
         font-size: 16px;
@@ -266,7 +278,7 @@
       border-radius: 8px;
       cursor: pointer;
 
-      font-family: 'Roboto', sans-serif;
+      font-family: "Roboto", sans-serif;
       font-style: normal;
       font-weight: 400;
       font-size: 16px;

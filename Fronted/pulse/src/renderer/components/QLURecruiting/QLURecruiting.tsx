@@ -2,55 +2,20 @@
 
 import React, { useEffect, useState } from "react";
 import styles from "./style.module.scss";
-import { useAuth } from "../../context/AuthContext";
-import { chatService } from "../../services/chatService";
+import { useAuth } from "../../hooks/useAuth";
+import hooks from "../../hooks"; // path to your hook
 import { GroupsIcon, arrowBottom, logo, chat } from "../../assets/icons";
-import { useChatList } from "../../hooks/useChat";
-import { useGroupChatList } from "../../hooks/useChat"; // path to your hook
-interface Members {
-  id: string;
-  profile_picture: string;
-  display_name: string;
-}
-interface Group {
-  groupId: string;
-  name: string;
-  members: Members[];
-}
-
-interface User {
-  id: string;
-  display_name: string;
-  profile_picture?: string | null;
-}
-
-interface ChatData {
-  id: string;
-  name: string;
-  avatar_url?: string;
-  members?: Members[];
-  type: "group" | "direct";
-}
+import { ChatData, GroupChatBox } from "../../types";
+import User from "../../types/User";
+import { dbPathToUrl } from "../../utils/helper"; // helper functions
 
 type ViewType = "splash" | "groups" | "directChat" | "groupChat";
 
 interface QLURecruitingProps {
   onViewChange: (view: ViewType, chatData?: ChatData | null) => void;
-  registerRefresh?: (fn: () => void) => void; // optional prop to register refresh function
+  registerRefresh?: (fn: () => void) => void;
 }
 
-interface PrivateChat {
-  partnerId: string;
-  partner: User;
-  id?: string; // Optional for backward compatibility
-  lastMessage?: {
-    content: string;
-    timestamp: string;
-    sender: User;
-  };
-  unreadCount?: number;
-}
-const API_BASE = "http://localhost:4000";
 export default function QLURecruiting({
   onViewChange,
   registerRefresh,
@@ -58,23 +23,23 @@ export default function QLURecruiting({
   const { token, user } = useAuth();
   const [isGroupsDropdownOpen, setIsGroupsDropdownOpen] = useState(true);
   const [isDirectDropdownOpen, setIsDirectDropdownOpen] = useState(true);
+
   const {
     data: groups = [],
     isLoading: groupsLoading,
     refetchGroupChats,
-  } = useGroupChatList();
+  } = hooks.useGroupChatList();
 
   const {
     chats: privateChats,
     isLoading: loadingChats,
     error: chatError,
     refetch: loadPrivateChats,
-  } = useChatList();
+  } = hooks.useChatList();
 
-  React.useEffect(() => {
-    if (registerRefresh) registerRefresh(loadPrivateChats);
-    console.log("Registering refresh function");
-  }, [registerRefresh, loadPrivateChats]);
+  // useEffect(() => {
+  //   console.log("Registering refresh function");
+  // }, [registerRefresh, loadPrivateChats]);
 
   const handleGroupsClick = (): void => {
     onViewChange("groups");
@@ -88,7 +53,7 @@ export default function QLURecruiting({
     setIsDirectDropdownOpen(!isDirectDropdownOpen);
   };
 
-  const handleGroupSelect = (group: Group): void => {
+  const handleGroupSelect = (group: GroupChatBox): void => {
     onViewChange("groupChat", {
       id: group.groupId,
       name: group.name,
@@ -97,9 +62,9 @@ export default function QLURecruiting({
     });
   };
 
-  const handleUserSelect = (user: User, partnerId: string): void => {
+  const handleUserSelect = (user: User): void => {
     onViewChange("directChat", {
-      id: partnerId,
+      id: user.id,
       name: user.display_name,
       avatar_url: user.profile_picture || undefined,
       type: "direct",
@@ -150,10 +115,8 @@ export default function QLURecruiting({
           <div className={styles.groupsList}>
             {groupsLoading && <div>Loading groups...</div>}
 
-            {!groupsLoading && groups.length === 0 && <div>No groups yet</div>}
-
             {!groupsLoading &&
-              groups.map((group) => (
+              groups.map((group: any) => (
                 <div
                   key={group.groupId}
                   className={styles.groupItem}
@@ -193,41 +156,31 @@ export default function QLURecruiting({
                 <button onClick={() => loadPrivateChats()}>Retry</button>
               </div>
             )}
-            {!loadingChats && !chatError && privateChats.length === 0 && (
+            {/* {!loadingChats && !chatError && privateChats.length === 0 && (
               <div>No chats yet</div>
-            )}
+            )} */}
 
             {!loadingChats &&
               privateChats.map((chat) => {
-                console.log(chat);
-                const partner = chat.partner;
-                if (!partner) return null;
+                if (!chat) return null;
 
                 return (
                   <div
-                    key={chat.partnerId}
+                    key={chat.id}
                     className={styles.userItem}
-                    onClick={() => handleUserSelect(partner, chat.partnerId)}
+                    onClick={() => handleUserSelect(chat)}
                   >
                     <div className={styles.userAvatarContainer}>
                       <div
                         className={styles.userAvatar}
                         style={{
-                          background: partner.profile_picture
-                            ? `url(${API_BASE}/${partner.profile_picture.replace(/\\/g, "/").replace(/^\/+/, "")}) center/cover no-repeat`
+                          background: chat.profile_picture
+                            ? `url(${dbPathToUrl(chat.profile_picture)}) center/cover no-repeat`
                             : `url(${logo}) center/cover no-repeat`,
                         }}
                       />
                     </div>
-                    <span className={styles.userName}>
-                      {partner.display_name}
-                    </span>
-                    {/* {chat.unreadCount && chat.unreadCount > 0 && (
-                      <span className={styles.unreadBadge}>
-                        {chat.unreadCount}
-                      </span>
-                    )
-                    } */}
+                    <span className={styles.userName}>{chat.display_name}</span>
                   </div>
                 );
               })}
